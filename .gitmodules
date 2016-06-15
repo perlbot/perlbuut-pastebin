@@ -1,0 +1,3 @@
+[submodule "extern/ace-builds"]
+	path = extern/ace-builds
+	url = https://github.com/ajaxorg/ace-builds/
