@@ -19,10 +19,12 @@ get '/' => sub {
     $c->stash({pastedata => q{}, channels => \%channels});
     $c->render(template => "editor");
 };
+get '/pastebin' => sub {$_[0]->redirect_to('/')};
+get '/paste' => sub {$_[0]->redirect_to('/')};
 
-get '/pastebin' => sub {
+post '/paste' => sub {
     my $c = shift;
-    $c->redirect_to('/');
+    $c->render(text => "post accepted!");
 };
 
 get '/pastebin/:pasteid' => sub {
