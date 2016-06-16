@@ -37,7 +37,7 @@ __DATA__
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <script src="https://code.jquery.com/jquery-3.0.0.min.js" ></script>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" ></script>
 
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -95,7 +95,7 @@ say "Hello Perlbot";
   </div>
 </div>
 
-<script src="extern/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
     $("#pastebin").hide();
     $("#editor").show();
