@@ -8,9 +8,16 @@ use Data::Dumper;
 
 use Mojolicious::Lite;
 
+# hardcode some channels first
+my %channels = (
+    "freenode#perlbot" => "#perlbot (freenode)",
+    "freenode#perl" => "#perl (freenode)",
+);
+
 get '/' => sub {
     my $c    = shift;
-    $c->render(text => "Make a new paste");
+    $c->stash({pastedata => q{}, channels => \%channels});
+    $c->render(template => "editor");
 };
 
 get '/pastebin' => sub {
@@ -21,7 +28,15 @@ get '/pastebin' => sub {
 get '/pastebin/:pasteid' => sub {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
-    $c->stash({pasteid => $pasteid});
+    $c->stash({pastedata => q{
+use strict;
+use warnings;
+
+use Data::Dumper;
+use v5.24;
+
+say "Hello Perlbot";
+    }, channels => \%channels});
 
     $c->render(template => "editor");
 };
@@ -46,7 +61,6 @@ __DATA__
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-
   <title>Editor</title>
   <style type="text/css" media="screen">
     #editor {
@@ -56,7 +70,6 @@ __DATA__
       height: 500px;
       display: none;
     }
-
 
     #pastebin {
       font-family: 'mono'
@@ -69,31 +82,43 @@ __DATA__
 </head>
 <body>
 
-<div id="content" class="container">
-  <div class="panel">
-    <div class="panel-heading">
-      <h3 class="panel-title">Editor</h3>
+<form action="/paste" method="POST">
+    <div id="content" class="container">
+      <div class="panel">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-md-3">
+              <label for="name">Who: </label>
+              <input size="20" name="name" placeholder="Anonymous" />
+            </div>
+            <div class="col-md-3">
+              <label for="chan">Where: </label>
+              <select name="chan" id="chan">
+                  <option value="">-- IRC Channel --</option>
+              % for my $i (keys %$channels) {
+                  <option value="<%= $i %>"><%= $channels->{$i} %></option>
+              % }
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="desc">What: </label>
+              <input size="40" name="desc" placeholder="I broke this" />
+            </div>
+          </div>
+        </div>
       </div>
-  </div>
-  <div class="panel-body">
-    <div class="editors">
-    <textarea name="pastebin" id="pastebin" cols="80" rows="25">
-use strict;
-use warnings;
-
-use Data::Dumper;
-use v5.24;
-
-say "Hello Perlbot";
-    </textarea>
-    <pre id="editor">
-    </pre>
+      <div class="panel-body">
+        <div class="editors">
+        <textarea name="paste" id="pastebin" cols="80" rows="25"><%= $pastedata %></textarea>
+        <pre id="editor">
+        </pre>
+        </div>
+        <div class="panel-footer">
+          <input value="Submit" type="submit" />
+        </div>
+      </div>
     </div>
-    <div class="panel-footer">
-      Footer <button value="Submit">Submit</button> <!-- todo make this a submit, and handle the form in javascript -->
-    </div>
-  </div>
-</div>
+</form>
 
 <script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
@@ -107,7 +132,7 @@ say "Hello Perlbot";
     function resizeAce() {
       var h = window.innerHeight;
       if (h > 360) {
-        $('#editor').css('height', (h - 290).toString() + 'px');
+        $('#editor').css('height', (h - 175).toString() + 'px');
       }
     };
     $(window).on('resize', function () {
