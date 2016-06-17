@@ -10,9 +10,16 @@ use DBI;
 use Mojolicious::Lite;
 use Mojolicious::Plugin::TtRenderer;
 
-plugin 'tt_renderer';
+plugin 'tt_renderer' => {
+  template_options => {
+    PRE_CHOMP => 1,
+    POST_CHOMP => 1,
+    TRIM => 1,
+  },
+};
+
 app->renderer->default_handler( 'tt' );
-app->renderer->paths( [ './tt' ] );
+app->renderer->paths( [ './tmpl' ] );
 
 my $dbh = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1});
 # hardcode some channels first
@@ -24,7 +31,7 @@ my %channels = (
 get '/' => sub {
     my $c    = shift;
     $c->stash({pastedata => q{}, channels => \%channels, viewing => 0});
-    $c->render(template => "editor");
+    $c->render("editor");
 };
 get '/pastebin' => sub {$_[0]->redirect_to('/')};
 get '/paste' => sub {$_[0]->redirect_to('/')};
@@ -54,7 +61,7 @@ get '/pastebin/:pasteid' => sub {
         $c->stash({pastedata => $row->{paste}, channels => \%channels, viewing => 1});
         $c->stash($row);
 
-        $c->render(template => "editor");
+        $c->render('editor');
     } else {
 # 404
     }
