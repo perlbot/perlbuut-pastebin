@@ -5,9 +5,11 @@ use warnings;
 use FindBin qw($Bin);
 use lib "$Bin/lib";
 use Data::Dumper;
+use DBI;
 
 use Mojolicious::Lite;
 
+my $dbh = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1});
 # hardcode some channels first
 my %channels = (
     "freenode#perlbot" => "#perlbot (freenode)",
@@ -16,31 +18,42 @@ my %channels = (
 
 get '/' => sub {
     my $c    = shift;
-    $c->stash({pastedata => q{}, channels => \%channels});
+    $c->stash({pastedata => q{}, channels => \%channels, viewing => 0});
     $c->render(template => "editor");
 };
 get '/pastebin' => sub {$_[0]->redirect_to('/')};
 get '/paste' => sub {$_[0]->redirect_to('/')};
 
+
 post '/paste' => sub {
     my $c = shift;
-    $c->render(text => "post accepted!");
+
+    my @args = map {($c->param($_))} qw/paste user chan desc/;
+
+    $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when') VALUES (?, ?, ?, ?, ?)", {}, @args, time());
+    my $id = $dbh->last_insert_id('', '', 'posts', 'id');
+
+    $c->redirect_to('/pastebin/'.$id);
+    #$c->render(text => "post accepted! $id");
 };
 
 get '/pastebin/:pasteid' => sub {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
-    $c->stash({pastedata => q{
-use strict;
-use warnings;
+    
+    my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
 
-use Data::Dumper;
-use v5.24;
+    print Dumper($row);
 
-say "Hello Perlbot";
-    }, channels => \%channels});
+    if ($row->{when}) {
+        $c->stash({pastedata => $row->{paste}, channels => \%channels, viewing => 1});
+        $c->stash($row);
 
-    $c->render(template => "editor");
+        $c->render(template => "editor");
+    } else {
+# 404
+    }
+
 };
 
 app->start;
@@ -73,7 +86,7 @@ __DATA__
       display: none;
     }
 
-    #pastebin {
+    #paste {
       font-family: 'mono'
     }
 
@@ -84,39 +97,53 @@ __DATA__
 </head>
 <body>
 
-<form action="/paste" method="POST">
+<form action="/paste" method="POST" id="form">
     <div id="content" class="container">
       <div class="panel">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-md-3">
-              <label for="name">Who: </label>
-              <input size="20" name="name" placeholder="Anonymous" />
-            </div>
-            <div class="col-md-3">
-              <label for="chan">Where: </label>
-              <select name="chan" id="chan">
-                  <option value="">-- IRC Channel --</option>
-              % for my $i (keys %$channels) {
-                  <option value="<%= $i %>"><%= $channels->{$i} %></option>
-              % }
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label for="desc">What: </label>
-              <input size="40" name="desc" placeholder="I broke this" />
-            </div>
+            % if ($viewing) {
+              <div class="col-md-3">
+                <b>Who: </b><%= $who %>
+              </div>
+              <div class="col-md-3">
+                <b>When: </b><%= $when %>
+              </div>
+              <div class="col-md-6">
+                <b>What: </b><%= $what %>
+              </div>
+            % } else {
+              <div class="col-md-3">
+                <label for="name">Who: </label>
+                <input size="20" name="name" placeholder="Anonymous" />
+              </div>
+              <div class="col-md-3">
+                <label for="chan">Where: </label>
+                <select name="chan" id="chan">
+                    <option value="">-- IRC Channel --</option>
+                % for my $i (keys %$channels) {
+                    <option value="<%= $i %>"><%= $channels->{$i} %></option>
+                % }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="desc">What: </label>
+                <input size="40" name="desc" placeholder="I broke this" />
+              </div>
+            % }
           </div>
         </div>
       </div>
       <div class="panel-body">
         <div class="editors">
-        <textarea name="paste" id="pastebin" cols="80" rows="25"><%= $pastedata %></textarea>
+        <textarea name="paste" id="paste" cols="80" rows="25"><%= $pastedata %></textarea>
         <pre id="editor">
         </pre>
         </div>
         <div class="panel-footer">
-          <input value="Submit" type="submit" />
+          % unless ($viewing) {
+          <input value="Submit" type="submit" id="submit" />
+          % }
         </div>
       </div>
     </div>
@@ -124,12 +151,16 @@ __DATA__
 
 <script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
-    $("#pastebin").hide();
+    $("#paste").hide();
     $("#editor").show();
-    $("#editor").text($("#pastebin").text());
+    $("#editor").text($("#paste").text());
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
+
+    % if ($viewing) {
+        editor.setReadOnly(true);
+    % }
 
     function resizeAce() {
       var h = window.innerHeight;
@@ -141,6 +172,10 @@ __DATA__
       resizeAce();
     });
     resizeAce();
+
+    $("#submit").on('click', function () {
+        $("#paste").text(editor.getValue()); // copy to the textarea
+    });
 
 </script>
 
