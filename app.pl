@@ -87,7 +87,7 @@ sub get_eval {
 
 get '/' => sub {
     my $c    = shift;
-    $c->stash({pastedata => q{}, channels => \%channels, viewing => 0, page_tmpl => 'editor.html.tt'});
+    $c->stash({pastedata => q{}, channels => \%channels, page_tmpl => 'editor.html'});
     $c->render("page");
 };
 get '/pastebin' => sub {$_[0]->redirect_to('/')};
@@ -112,8 +112,8 @@ get '/edit/:pasteid' => sub {
     my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
 
     if ($row->{when}) {
-        $c->stash({pastedata => $row->{paste}, channels => \%channels, viewing => 0});
-        $c->stash({page_tmpl => 'editor.html.tt'});
+        $c->stash({pastedata => $row->{paste}, channels => \%channels});
+        $c->stash({page_tmpl => 'editor.html'});
 
         $c->render('page');
     } else {
@@ -128,9 +128,10 @@ get '/pastebin/:pasteid' => sub {
     my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
 
     if ($row->{when}) {
-        $c->stash({pastedata => $row->{paste}, channels => \%channels, viewing => 1});
         $c->stash($row);
-        $c->stash({page_tmpl => 'editor.html.tt'});
+        $c->stash({page_tmpl => 'viewer.html'});
+        $c->stash({eval => get_eval($pasteid, $row->{paste})});
+        $c->stash({paste_id => $pasteid});
 
         $c->render('page');
     } else {

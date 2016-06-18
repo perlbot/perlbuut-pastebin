@@ -4,12 +4,6 @@
       margin: auto;
       position: relative !important;
       width: 100%;
-      height: 500px;
-      display: none;
-    }
-
-    #paste {
-      font-family: 'mono'
     }
 
     html, body, #content {
@@ -20,40 +14,20 @@
 
 [% BLOCK page_header %]
 <div class="row">
-  [% IF viewing %]
     <div class="col-md-3">
-      <b>Who: </b>[% who %]
+      <b>Who: </b>[% who | html %]
     </div>
     <div class="col-md-3">
       <b>When: </b>[% when %]
     </div>
     <div class="col-md-6">
-      <b>What: </b>[% what %]
+      <b>What: </b>[% what | html %]
     </div>
-  [% ELSE %]
-    <div class="col-md-3">
-      <label for="name">Who: </label>
-      <input size="20" name="name" placeholder="Anonymous" />
-    </div>
-    <div class="col-md-3">
-      <label for="chan">Where: </label>
-      <select name="chan" id="chan">
-          <option value="">-- IRC Channel --</option>
-      [% FOREACH channel = channels %]
-          <option value="[% channel.key %]">[% channel.value %]</option>
-      [% END %]
-      </select>
-    </div>
-    <div class="col-md-6">
-      <label for="desc">What: </label>
-      <input size="40" name="desc" placeholder="I broke this" />
-    </div>
-  [% END %]
 </div>
 [% END %]
 
 [% BLOCK body %]
-<form action="/paste" method="POST" id="form">
+<form action="/edit/[% paste_id %]" method="GET" id="form">
     <div id="content" class="container">
       <div class="panel">
         <div class="panel-heading">
@@ -61,15 +35,17 @@
         </div>
       </div>
       <div class="panel-body">
-        <div class="editors">
-        <textarea name="paste" id="paste" cols="80" rows="25">[% pastedata %]</textarea>
-        <pre id="editor">
-        </pre>
+        <div class="row">
+          <div class="col-md-6">
+            <pre id="editor">[% paste | html %]</pre>
+          </div>
+          <div id="eval" class="col-md-6">
+            <h3>Program Output:</h3>
+            <pre>[% eval | html %]</pre>
+          </div>
         </div>
         <div class="panel-footer">
-          [% UNLESS viewing %]
-          <input value="Submit" type="submit" id="submit" />
-          [% END %]
+          <input value="Fork and Edit" type="submit" id="submit" />
         </div>
       </div>
     </div>
@@ -77,16 +53,11 @@
 
 <script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
-    $("#paste").hide();
-    $("#editor").show();
-    $("#editor").text($("#paste").text());
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
 
-    [% IF viewing %]
-        editor.setReadOnly(true);
-    [% END %]
+    editor.setReadOnly(true);
 
     function resizeAce() {
       var h = window.innerHeight;
