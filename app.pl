@@ -2,6 +2,10 @@
 
 use strict;
 use warnings;
+use v5.22;
+no warnings "experimental::postderef";
+use feature "postderef", "postderef_qq";
+
 use FindBin qw($Bin);
 use lib "$Bin/lib";
 use Data::Dumper;
@@ -10,10 +14,8 @@ use Encode qw/decode/;
 
 use Mojolicious::Lite;
 use Mojolicious::Plugin::TtRenderer;
-use Cache::Memcached::Fast;
 use POE::Filter::Reference;
-use IO::Compress::Gzip;
-use IO::Uncompress::Gunzip;
+use TOML;
 
 plugin 'tt_renderer' => {
   template_options => {
@@ -24,37 +26,51 @@ plugin 'tt_renderer' => {
 };
 
 app->renderer->default_handler( 'tt' );
-app->renderer->paths( [ './tmpl' ] );
 
-my $memkey = time();
+my $cfg = do {
+    my $toml = do {open(my $fh, "<", "$Bin/app.cfg"); local $/; <$fh>};
+# With error checking
+    my ($data, $err) = from_toml($toml);
+    unless ($data) {
+            die "Error parsing toml: $err";
+    }
+    $data;
+};
 
-my $memd = new Cache::Memcached::Fast({
-    servers => [ { address => 'localhost:11211', weight => 2.5 }, ],
-    namespace => "pastebin_$memkey:",
-    connect_timeout => 0.2,
-    io_timeout => 0.5,
-    close_on_error => 1,
-    compress_threshold => 1_000,
-    compress_ratio => 0.9,
-    compress_methods => [ \&IO::Compress::Gzip::gzip,
-                          \&IO::Uncompress::Gunzip::gunzip ],
-    max_failures => 3,
-    failure_timeout => 2,
-    ketama_points => 150,
-    nowait => 1,
-    hash_namespace => 1,
-    serialize_methods => [ \&Storable::freeze, \&Storable::thaw ],
-    utf8 => 1,
-    max_size => 512 * 1024,
-});
+my $memd;
+
+if ($cfg->{features}{memcached}) {
+    my $namespace = delete $cfg->{memcached}{namespace};
+    $namespace .= "_".time() if (delete $cfg->{memcached}{unique_namespace});
+
+    # Only load these if we're using them
+    require Cache::Memcached::Fast;
+    require IO::Compress::Gzip;
+    require IO::Uncompress::Gunzip;
+    $memd = Cache::Memcached::Fast->new({
+        namespace => $namespace // 'pastebin',
+        connect_timeout => 0.2,
+        io_timeout => 0.5,
+        close_on_error => 1,
+        compress_threshold => 1_000,
+        compress_ratio => 0.9,
+        compress_methods => [ \&IO::Compress::Gzip::gzip,
+                              \&IO::Uncompress::Gunzip::gunzip ],
+        max_failures => 3,
+        failure_timeout => 2,
+        ketama_points => 150,
+        nowait => 1,
+        hash_namespace => 1,
+        serialize_methods => [ \&Storable::freeze, \&Storable::thaw ],
+        utf8 => 1,
+        max_size => 512 * 1024,
+        $cfg->{memcached}->%*, # let the config overwrite anything set here if they want
+    });
+};
 
 my $dbh = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1});
-$dbh->{unicode} = 1;
+$dbh->{sqlite_unicode} = 1;
 # hardcode some channels first
-my %channels = (
-    "freenode#perlbot" => "#perlbot (freenode)",
-    "freenode#perl" => "#perl (freenode)",
-);
 
 sub insert_pastebin {
     my ($paste, $who, $what, $where) = @_;
@@ -68,7 +84,7 @@ sub insert_pastebin {
 sub get_eval {
     my ($paste_id, $code) = @_;
    
-    if (my $cached = $memd->get($paste_id)) {
+    if ($cfg->{features}{memcached} && (my $cached = $memd->get($paste_id))) {
         return $cached;
     } else {
         my $filter = POE::Filter::Reference->new();
@@ -83,7 +99,7 @@ sub get_eval {
         my $result = $filter->get( [ $output ] );
         my $str = eval {decode("utf8", $result->[0]->[0])} // $result->[0]->[0];
         $str = eval {decode("utf8", $str)} // $str; # I don't know why i need to decode this twice.  shurg.
-        $memd->set($paste_id, $str);
+        $memd->set($paste_id, $str) if $cfg->{features}{memcached};
 
         return $str;
     }
@@ -92,7 +108,7 @@ sub get_eval {
 
 get '/' => sub {
     my $c    = shift;
-    $c->stash({pastedata => q{}, channels => \%channels, page_tmpl => 'editor.html'});
+    $c->stash({pastedata => q{}, channels => $cfg->{announce}{channels}, page_tmpl => 'editor.html'});
     $c->render("page");
 };
 get '/pastebin' => sub {$_[0]->redirect_to('/')};
@@ -117,7 +133,7 @@ get '/edit/:pasteid' => sub {
     my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
 
     if ($row->{when}) {
-        $c->stash({pastedata => $row->{paste}, channels => \%channels});
+        $c->stash({pastedata => $row->{paste}, channels =>$cfg->{announce}{channels}});
         $c->stash({page_tmpl => 'editor.html'});
 
         $c->render('page');
