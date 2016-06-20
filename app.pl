@@ -6,6 +6,7 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 use Data::Dumper;
 use DBI;
+use Encode qw/decode/;
 
 use Mojolicious::Lite;
 use Mojolicious::Plugin::TtRenderer;
@@ -25,9 +26,11 @@ plugin 'tt_renderer' => {
 app->renderer->default_handler( 'tt' );
 app->renderer->paths( [ './tmpl' ] );
 
+my $memkey = time();
+
 my $memd = new Cache::Memcached::Fast({
     servers => [ { address => 'localhost:11211', weight => 2.5 }, ],
-    namespace => 'pastebin:',
+    namespace => "pastebin_$memkey:",
     connect_timeout => 0.2,
     io_timeout => 0.5,
     close_on_error => 1,
@@ -46,6 +49,7 @@ my $memd = new Cache::Memcached::Fast({
 });
 
 my $dbh = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1});
+$dbh->{unicode} = 1;
 # hardcode some channels first
 my %channels = (
     "freenode#perlbot" => "#perlbot (freenode)",
@@ -77,10 +81,11 @@ sub get_eval {
         my $output = do {local $/; <$socket>};
         close $socket;
         my $result = $filter->get( [ $output ] );
+        my $str = eval {decode("utf8", $result->[0]->[0])} // $result->[0]->[0];
+        $str = eval {decode("utf8", $str)} // $str; # I don't know why i need to decode this twice.  shurg.
+        $memd->set($paste_id, $str);
 
-        $memd->set($paste_id, $result->[0]->[0]);
-
-        return $result->[0]->[0];
+        return $str;
     }
 }
 
