@@ -36,6 +36,7 @@
   <div class="col-md-6">
     <label for="desc">What: </label>
     <input size="40" name="desc" placeholder="I broke this" />
+    <input type="button" value="Show supported modules" id="showmodules" style="float:right"/>
   </div>
 </div>
 [% END %]
@@ -63,7 +64,39 @@
           <div id="modules" class="hidden">
             <h3>Program Output:</h3>
             <ul>
-              <li>Moose</li>
+              <li><a href="https://metacpan.org/module/arybase">arybase</a></li>
+              <li><a href="https://metacpan.org/module/bigint">bigint</a></li>
+              <li><a href="https://metacpan.org/module/experimental">experimental</a></li>
+              <li><a href="https://metacpan.org/module/indirect">indirect</a></li>
+              <li><a href="https://metacpan.org/module/utf8">utf8</a></li>
+              <li><a href="https://metacpan.org/module/BSD::Resource">BSD::Resource</a></li>
+              <li><a href="https://metacpan.org/module/Cpanel::JSON::XS">Cpanel::JSON::XS</a></li>
+              <li><a href="https://metacpan.org/module/Data::Dumper">Data::Dumper</a></li>
+              <li><a href="https://metacpan.org/module/Data::Munge">Data::Munge</a></li>
+              <li><a href="https://metacpan.org/module/Date::Parse">Date::Parse</a></li>
+              <li><a href="https://metacpan.org/module/DateTime">DateTime</a></li>
+              <li><a href="https://metacpan.org/module/Digest::MD5">Digest::MD5</a></li>
+              <li><a href="https://metacpan.org/module/Digest::SHA">Digest::SHA</a></li>
+              <li><a href="https://metacpan.org/module/Encode">Encode</a></li>
+              <li><a href="https://metacpan.org/module/Errno">Errno</a></li>
+              <li><a href="https://metacpan.org/module/File::Glob">File::Glob</a></li>
+              <li><a href="https://metacpan.org/module/Function::Parameters">Function::Parameters</a></li>
+              <li><a href="https://metacpan.org/module/JSON">JSON</a></li>
+              <li><a href="https://metacpan.org/module/JSON::MaybeXS">JSON::MaybeXS</a></li>
+              <li><a href="https://metacpan.org/module/JSON::XS">JSON::XS</a></li>
+              <li><a href="https://metacpan.org/module/List::MoreUtils">List::MoreUtils</a></li>
+              <li><a href="https://metacpan.org/module/List::Util">List::Util</a></li>
+              <li><a href="https://metacpan.org/module/List::UtilsBy">List::UtilsBy</a></li>
+              <li><a href="https://metacpan.org/module/Math::BigInt">Math::BigInt</a></li>
+              <li><a href="https://metacpan.org/module/Moose">Moose</a></li>
+              <li><a href="https://metacpan.org/module/POSIX">POSIX</a></li>
+              <li><a href="https://metacpan.org/module/Regexp::Common">Regexp::Common</a></li>
+              <li><a href="https://metacpan.org/module/Scalar::MoreUtils">Scalar::MoreUtils</a></li>
+              <li><a href="https://metacpan.org/module/Scalar::Util">Scalar::Util</a></li>
+              <li><a href="https://metacpan.org/module/Time::HiRes">Time::HiRes</a></li>
+              <li><a href="https://metacpan.org/module/Time::Piece">Time::Piece</a></li>
+              <li><a href="https://metacpan.org/module/URI">URI</a></li>
+              <li><a href="https://metacpan.org/module/URI::Encode">URI::Encode</a></li>
             </ul>
           </div>
         </div>
@@ -77,12 +110,36 @@
 
 <script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
+
+  var showingmodules = 0;
+  var showingeval = 0;
+
     $("#paste").hide();
     $("#editor").show();
     $("#editor").text($("#paste").text());
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
+
+    function setup_columns() {
+      if (showingeval && showingmodules) {
+        $("#editors").removeClass().addClass('col-md-6');
+        $("#evalcol").removeClass().addClass('col-md-4');
+        $("#modules").removeClass().addClass('col-md-2');
+      } else if (showingeval) {
+        $("#editors").removeClass().addClass('col-md-6');
+        $("#evalcol").removeClass().addClass('col-md-6');
+        $("#modules").removeClass().addClass('hidden');
+      } else if (showingmodules) {
+        $("#editors").removeClass().addClass('col-md-10');
+        $("#evalcol").removeClass().addClass('hidden');
+        $("#modules").removeClass().addClass('col-md-2');
+      } else {
+        $("#editors").removeClass().addClass('col-md-12');
+        $("#evalcol").removeClass().addClass('hidden');
+        $("#modules").removeClass().addClass('hidden');
+      }
+    };
 
     function resizeAce() {
       var h = window.innerHeight;
@@ -100,23 +157,26 @@
     });
 
     $('#evalme').on('click', function () {
+      showingeval = 1;
       $('#eval').text("Evaluating...");
-      $('#evalcol').removeClass();
+      
+      setup_columns();
 
-      if (1) { // Eval, no docs
-        $('#evalcol').addClass('col-md-6');
-        $('#editors').removeClass().addClass('col-md-6');
-        $.ajax('/eval', {
-          method: 'post',
-          data: {code: editor.getValue()},
-          dataType: "json",
-          success: function(data, status) {
-            $('#eval').text(data.evalout);
-          }
-        });
-      } else if (0) { // Eval with docs
-      }
+      $.ajax('/eval', {
+        method: 'post',
+        data: {code: editor.getValue()},
+        dataType: "json",
+        success: function(data, status) {
+          $('#eval').text(data.evalout);
+        }
+      });
     });
+
+  $("#showmodules").on('click', function() {
+    showingmodules = 1 - showingmodules;
+
+    setup_columns();
+  });
 
 </script>
 [% END %]
