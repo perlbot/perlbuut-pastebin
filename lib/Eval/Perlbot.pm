@@ -16,7 +16,7 @@ use App::Memcached;
 sub get_eval {
     my ($paste_id, $code) = @_;
    
-    if (my $cached = $memd->get($paste_id)) {
+    if ($paste_id && (my $cached = $memd->get($paste_id))) {
         return $cached;
     } else {
         my $filter = POE::Filter::Reference->new();
@@ -31,7 +31,7 @@ sub get_eval {
         my $result = $filter->get( [ $output ] );
         my $str = eval {decode("utf8", $result->[0]->[0])} // $result->[0]->[0];
         $str = eval {decode("utf8", $str)} // $str; # I don't know why i need to decode this twice.  shurg.
-        $memd->set($paste_id, $str);
+        $memd->set($paste_id, $str) if ($paste_id);
 
         return $str;
     }

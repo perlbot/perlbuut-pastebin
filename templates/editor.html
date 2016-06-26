@@ -49,15 +49,29 @@
         </div>
       </div>
       <div class="panel-body">
-        <div class="editors">
-        <textarea name="paste" id="paste" cols="80" rows="25">[% pastedata | html %]</textarea>
-        <pre id="editor">
-        </pre>
+
+        <div class="row">
+          <div id="editors" class="col-md-12">
+            <textarea name="paste" id="paste" cols="80" rows="25">[% pastedata | html %]</textarea>
+            <pre id="editor">
+            </pre>
+          </div>
+          <div id="evalcol" class="hidden">
+            <h3>Program Output:</h3>
+            <pre id="eval">[% eval | html %]</pre>
+          </div>
+          <div id="modules" class="hidden">
+            <h3>Program Output:</h3>
+            <ul>
+              <li>Moose</li>
+            </ul>
+          </div>
         </div>
         <div class="panel-footer">
           <input value="Submit" type="submit" id="submit" />
+          <input value="Check Eval" type="button" id="evalme" />
         </div>
-      </div>
+
     </div>
 </form>
 
@@ -83,6 +97,25 @@
 
     $("#submit").on('click', function () {
         $("#paste").text(editor.getValue()); // copy to the textarea
+    });
+
+    $('#evalme').on('click', function () {
+      $('#eval').text("Evaluating...");
+      $('#evalcol').removeClass();
+
+      if (1) { // Eval, no docs
+        $('#evalcol').addClass('col-md-6');
+        $('#editors').removeClass().addClass('col-md-6');
+        $.ajax('/eval', {
+          method: 'post',
+          data: {code: editor.getValue()},
+          dataType: "json",
+          success: function(data, status) {
+            $('#eval').text(data.evalout);
+          }
+        });
+      } else if (0) { // Eval with docs
+      }
     });
 
 </script>

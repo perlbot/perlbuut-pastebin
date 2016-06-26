@@ -106,14 +106,13 @@ get '/pastebin/:pasteid' => sub {
 
 };
 
-get '/eval/:pasteid' => sub {
+post '/eval' => sub {
     my ($c) = @_;
-    my $pasteid = $c->param('pasteid');
+    my $data = $c->req->body_params;
 
-    my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
-    my $code = $row->{paste} // '';
+    my $code = $data->param('code') // '';
 
-    my $output = get_eval($pasteid, $code);
+    my $output = get_eval(undef, $code);
 
     $c->render(json => {evalout => $output});
 };
