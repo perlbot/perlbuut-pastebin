@@ -15,12 +15,12 @@ use Encode qw/decode/;
 use Mojolicious::Lite;
 use Mojolicious::Plugin::TtRenderer;
 use POE::Filter::Reference;
-
 use App::Config;
 use App::Memcached;
 use Eval::Perlbot;
 use IRC::Perlbot;
 use DateTime;
+use App::Spamfilter;
 
 plugin 'tt_renderer' => {
   template_options => {
@@ -31,6 +31,10 @@ plugin 'tt_renderer' => {
 };
 
 app->renderer->default_handler( 'tt' );
+
+if ($cfg->{features}{blogspam}) {
+    plugin 'BlogSpam' => ($cfg->{blogspam}->%*);
+}
 
 my $dbh = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1});
 $dbh->{sqlite_unicode} = 1;
@@ -60,11 +64,16 @@ post '/paste' => sub {
     my @args = map {($c->param($_))} qw/paste name desc chan/;
 
     my $id = insert_pastebin(@args);
+    my ($code, $who, $desc, $channel) = @args;
 
     # TODO select which one based on config
 # TODO make this use the config, or http params for the url
-    my ($channel, $who, $what, $link) = @_;
-    IRC::Perlbot::announce($c->param('chan'), $c->param('name'), $c->param('desc'), "https://perlbot.pl/pastebin/$id");
+
+    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
+        warn "I thought this was spam! $type";
+    } else {
+        IRC::Perlbot::announce($c->param('chan'), $c->param('name'), $c->param('desc'), "https://perlbot.pl/pastebin/$id");
+    }
 
     $c->redirect_to('/pastebin/'.$id);
     #$c->render(text => "post accepted! $id");
@@ -123,7 +132,6 @@ post '/eval' => sub {
 
 get '/robots.txt' => sub {
     my ($c) = @_;
-
 
     $c->render(text => qq{User-agent: *
 Disallow: /});

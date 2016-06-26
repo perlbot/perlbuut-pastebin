@@ -1,11 +1,12 @@
 requires 'Mojolicious';
 requires 'JSON::MaybeXS';
 
-requires 'TOML'
+requires 'TOML';
 requires 'Cache::Memcached::Fast';
 requires 'DateTime';
 requires 'DBI';
 requires 'DBD::SQLite';
 requires 'Mojolicious::Lite';
 requires 'Mojolicious::Plugin::TtRenderer';
+requires 'Mojolicious::Plugin::BlogSpam';
 requires 'POE::Filter::Reference';
