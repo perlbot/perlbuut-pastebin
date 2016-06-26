@@ -20,6 +20,7 @@ use App::Config;
 use App::Memcached;
 use Eval::Perlbot;
 use IRC::Perlbot;
+use DateTime;
 
 plugin 'tt_renderer' => {
   template_options => {
@@ -92,8 +93,11 @@ get '/pastebin/:pasteid' => sub {
     
     my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
 
-    if ($row->{when}) {
+    my $when = delete $row->{when};
+
+    if ($when) {
         $c->stash($row);
+        $c->stash({when => DateTime->from_epoch(epoch => $when)->iso8601});
         $c->stash({page_tmpl => 'viewer.html'});
         $c->stash({eval => get_eval($pasteid, $row->{paste})});
         $c->stash({paste_id => $pasteid});
