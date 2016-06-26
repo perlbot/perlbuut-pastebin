@@ -121,5 +121,13 @@ post '/eval' => sub {
     $c->render(json => {evalout => $output});
 };
 
+get '/robots.txt' => sub {
+    my ($c) = @_;
+
+
+    $c->render(text => qq{User-agent: *
+Disallow: /});
+};
+
 app->start;
 
