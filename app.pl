@@ -72,7 +72,7 @@ post '/paste' => sub {
     if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
         warn "I thought this was spam! $type";
     } else {
-        IRC::Perlbot::announce($c->param('chan'), $c->param('name'), $c->param('desc'), "https://perlbot.pl/pastebin/$id");
+        IRC::Perlbot::announce($c->param('chan'), $c->param('name'), substr($c->param('desc'), 0, 40), "https://perlbot.pl/pastebin/$id");
     }
 
     $c->redirect_to('/pastebin/'.$id);
