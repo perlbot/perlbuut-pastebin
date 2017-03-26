@@ -36,10 +36,12 @@
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-12">
             <pre id="editor">[% paste | html %]</pre>
           </div>
-          <div id="eval" class="col-md-6">
+        </div>
+        <div class="row">
+          <div id="eval" class="col-md-12">
             <h3>Program Output:</h3>
             <pre>[% eval | html %]</pre>
           </div>
@@ -61,9 +63,9 @@
 
     function resizeAce() {
       var h = window.innerHeight;
-      if (h > 360) {
-        $('#editor').css('height', (h - 175).toString() + 'px');
-      }
+      var ch = h - 400;
+      var m = ch > 360 ? ch : 360;
+      $('#editor').css('height', m.toString() + 'px');
     };
     $(window).on('resize', function () {
       resizeAce();
