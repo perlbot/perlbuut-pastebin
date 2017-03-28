@@ -9,6 +9,11 @@
     html, body, #content {
       width: 100%;
     }
+    
+    @font-face {
+      font-family: "FiraCode";
+      src: url("/static/fonts/FiraCode-Regular.woff2") format('woff2');
+    }
   </style>
 [% END %]
 
@@ -60,17 +65,17 @@
     editor.session.setMode("ace/mode/perl");
 
     editor.setReadOnly(true);
-
-    function resizeAce() {
+    editor.setOptions({maxLines: Infinity, fontFamily: ['FiraCode']});
+    /*function resizeAce() {
       var h = window.innerHeight;
       var ch = h - 400;
       var m = ch > 360 ? ch : 360;
-      $('#editor').css('height', m.toString() + 'px');
+   //   $('#editor').css('height', m.toString() + 'px');
     };
     $(window).on('resize', function () {
       resizeAce();
     });
-    resizeAce();
+    resizeAce();*/
 
     $("#submit").on('click', function () {
         $("#paste").text(editor.getValue()); // copy to the textarea

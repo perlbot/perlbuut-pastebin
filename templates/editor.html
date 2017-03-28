@@ -15,6 +15,10 @@
     html, body, #content {
       width: 100%;
     }
+    @font-face {
+      font-family: "FiraCode";
+      src: url("/static/fonts/FiraCode-Regular.woff2") format('woff2');
+    }
   </style>
   <script>
     $(function() {
@@ -143,6 +147,25 @@
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
+
+    editor.setOptions({maxLines: Infinity, fontFamily: ['FiraCode']});
+/*editor.middleClick = false;
+    editor.on("mousedown", function (e) {
+      if (e.domEvent.which == 2) { // middle click
+        editor.middleClick = true;
+        var tempText = editor.getSelectedText();
+        if (e.$pos) {
+          editor.session.insert(e.$pos, tempText);
+        }
+        window.setTimeout(function () {
+          editor.middleClick = false;
+          if (e.$pos) {
+            editor.moveCursorTo(e.$pos.row, e.$pos.column + tempText.length);
+          }
+        }, 200);
+      }
+    });*/
+
 
     function setup_columns() {
       if (showingeval && showingmodules) {
