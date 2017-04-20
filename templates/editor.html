@@ -20,6 +20,13 @@
       font-family: "AnonymousPro";
       src: url("/static/fonts/AnonymousPro-Regular.woff2") format('woff2');
     }
+
+    .options label {
+      padding-right: 0.5em;
+    }
+    .options label:not(:first-child) {
+      padding-left: 2em;
+    }
   </style>
   <script>
     $(function() {
@@ -81,6 +88,37 @@
 
         <div class="row">
           <div id="editors" class="col-md-12">
+            <div class="options">
+              <label>Raw Editor</label>
+              <input type="checkbox" id="raw_editor"/>
+              <!-- TODO this should come from the eval server somehow -->
+              <label>Language</label>
+              <select name="language">
+                <option value="perl" data-lang="perl">Perl (blead)</option>
+                <option value="text" data-lang="text">Text</option>
+                <option value="perl5.24" data-lang="perl">Perl 5.24</option>
+                <option value="perl5.22" data-lang="perl">Perl 5.22</option>
+                <option value="perl5.20" data-lang="perl">Perl 5.20</option>
+                <option value="perl5.18" data-lang="perl">Perl 5.18</option>
+                <option value="perl5.16" data-lang="perl">Perl 5.16</option>
+                <option value="perl5.14" data-lang="perl">Perl 5.14</option>
+                <option value="perl5.12" data-lang="perl">Perl 5.12</option>
+                <option value="perl5.10" data-lang="perl">Perl 5.10</option>
+                <option value="perl5.8" data-lang="perl">Perl 5.8</option>
+                <option value="perl5.6" data-lang="perl">Perl 5.6</option>
+                <option value="perl5.5" data-lang="perl">Perl 5.5</option>
+                <option value="perl4" data-lang="perl">Perl 4.0.36</option>
+              </select>
+              <label>Expire in</label>
+              <select name="expire">
+                <option value="168">1 week</option>
+                <option value="48">2 days</option>
+                <option value="24">24 hours</option>
+                <option value="8">8 hours</option>
+                <option value="1">1 hour</option>
+                <option value="8760">1 year</option>
+              </select>
+            </div>
             <textarea name="paste" id="paste" cols="80" rows="25">[% pastedata | html %]</textarea>
             <pre id="editor">
             </pre>
@@ -90,8 +128,8 @@
             <pre id="eval">[% eval | html %]</pre>
           </div>
           <div id="modules" class="hidden">
-            <h3>Program Output:</h3>
-            <ul>
+            <h3>Supported modules</h3>
+            <ul><!-- TODO make this work via the cpanfile -->
               <li><a href="https://metacpan.org/module/arybase">arybase</a></li>
               <li><a href="https://metacpan.org/module/bigint">bigint</a></li>
               <li><a href="https://metacpan.org/module/experimental">experimental</a></li>
@@ -142,30 +180,34 @@
   var showingmodules = 0;
   var showingeval = 0;
 
-    $("#paste").hide();
-    $("#editor").show();
-    $("#editor").text($("#paste").text());
-    var editor = ace.edit("editor");
+   var editor;
+
+    var use_editor = function() {
+      if ($("#raw_editor").is(":checked")) {
+        if (editor) {
+          $("#paste").val(editor.getValue());
+        }
+	$("#editor").hide();
+	$("#paste").show();
+      } else {
+	$("#paste").hide();
+	$("#editor").show();
+        if (!editor) {
+	  $("#editor").text($("#paste").val());
+        } else {
+          editor.setValue($("#paste").val(),0);
+          editor.clearSelection();
+        }
+      }
+    };
+ 
+    use_editor();
+    $("#raw_editor").on("change", use_editor);
+    editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
 
     editor.setOptions({fontFamily: ['AnonymousPro', 'monospace', 'mono']});
-/*editor.middleClick = false;
-    editor.on("mousedown", function (e) {
-      if (e.domEvent.which == 2) { // middle click
-        editor.middleClick = true;
-        var tempText = editor.getSelectedText();
-        if (e.$pos) {
-          editor.session.insert(e.$pos, tempText);
-        }
-        window.setTimeout(function () {
-          editor.middleClick = false;
-          if (e.$pos) {
-            editor.moveCursorTo(e.$pos.row, e.$pos.column + tempText.length);
-          }
-        }, 200);
-      }
-    });*/
 
 
     function setup_columns() {
@@ -200,7 +242,10 @@
     resizeAce();
 
     $("#submit").on('click', function () {
-        $("#paste").text(editor.getValue()); // copy to the textarea
+      var code = $("#raw_editor").is(":checked") ?
+                 $("#paste").val() :
+                 editor.getValue();
+      $("#paste").text(code); // copy to the textarea
     });
 
     $('#evalme').on('click', function () {
@@ -209,9 +254,13 @@
       
       setup_columns();
 
+      var code = $("#raw_editor").is(":checked") ?
+                 $("#paste").val() :
+                 editor.getValue();
+
       $.ajax('/eval', {
         method: 'post',
-        data: {code: editor.getValue()},
+        data: {code: code},
         dataType: "json",
         success: function(data, status) {
           $('#eval').text(data.evalout);
