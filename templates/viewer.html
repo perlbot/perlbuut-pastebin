@@ -4,6 +4,7 @@
       margin: auto;
       position: relative !important;
       width: 100%;
+      font-variant-ligatures: none;
     }
 
     html, body, #content {
@@ -11,8 +12,8 @@
     }
     
     @font-face {
-      font-family: "FiraCode";
-      src: url("/static/fonts/FiraCode-Regular.woff2") format('woff2');
+      font-family: "AnonymousPro";
+      src: url("/static/fonts/AnonymousPro-Regular.woff2") format('woff2');
     }
   </style>
 [% END %]
@@ -65,7 +66,7 @@
     editor.session.setMode("ace/mode/perl");
 
     editor.setReadOnly(true);
-    editor.setOptions({maxLines: Infinity, fontFamily: ['FiraCode']});
+    editor.setOptions({maxLines: Infinity, fontFamily: ['AnonymousPro', 'monospace', 'mono']});
     /*function resizeAce() {
       var h = window.innerHeight;
       var ch = h - 400;
