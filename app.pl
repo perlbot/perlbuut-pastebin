@@ -183,5 +183,56 @@ get '/robots.txt' => sub {
 Disallow: /});
 };
 
+get '/api/v1/paste/:pasteid' => sub {
+    my $c = shift;
+    my $pasteid = $c->param('pasteid');
+    
+    my $row = get_paste($pasteid); 
+
+    if ($row) {
+        my $data = {
+          paste => $row->{paste},
+          when => $row->{when},
+          username => $row->{who},
+          description => $row->{desc},
+          language => $row->{language},
+          output => get_eval($pasteid, $row->{paste})
+        };
+
+        $c->render(json => $data);
+    } else {
+# 404
+        return $c->reply->not_found;
+    }
+};
+
+post '/api/v1/paste' => sub {
+    my $c = shift;
+
+    # TODO rate limiting
+
+    my @args = map {($c->param($_))} qw/paste username description channel expire language/;
+
+    my $id = insert_pastebin(@args);
+    my ($code, $who, $desc, $channel) = @args;
+
+    # TODO select which one based on config
+    # TODO make this use the config, or http params for the url
+
+    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
+        warn "I thought this was spam! $type";
+    } else {
+        if ($channel) { # TODO config for allowing announcements
+          IRC::Perlbot::announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
+        }
+    }
+
+    $c->render(json => {
+      url => "https://perlbot.pl/pastebin/$id", # TODO base url in config
+      id => $id,
+    });
+    #$c->render(text => "post accepted! $id");
+};
+
 app->start;
 
