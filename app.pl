@@ -41,12 +41,17 @@ $dbh->{sqlite_unicode} = 1;
 # hardcode some channels first
 
 sub insert_pastebin {
-    my ($paste, $who, $what, $where) = @_;
+    my ($paste, $who, $what, $where, $expire, $lang) = @_;
     
-    $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when') VALUES (?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time());
+    $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when', 'expiration', 'language') VALUES (?, ?, ?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time(), $expire, $lang);
     my $id = $dbh->last_insert_id('', '', 'posts', 'id');
 
-    return $id;
+    # TODO this needs to retry when it fails.
+    my @chars = ('a'..'z', 1..9);
+    my $slug = join '', map {$chars[rand() *@chars]} 1..6;
+    $dbh->do("INSERT INTO slugs (post_id, slug) VAlUES (?, ?)", {}, $id, $slug);
+
+    return $slug;
 }
 
 get '/' => sub {
@@ -61,7 +66,7 @@ get '/paste' => sub {$_[0]->redirect_to('/')};
 post '/paste' => sub {
     my $c = shift;
 
-    my @args = map {($c->param($_))} qw/paste name desc chan/;
+    my @args = map {($c->param($_))} qw/paste name desc chan expire language/;
 
     my $id = insert_pastebin(@args);
     my ($code, $who, $desc, $channel) = @args;
@@ -96,17 +101,56 @@ get '/edit/:pasteid' => sub {
     }
 };
 
-get '/pastebin/:pasteid' => sub {
-    my $c = shift;
-    my $pasteid = $c->param('pasteid');
-    
-    my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
+sub get_paste {
+    my $pasteid = shift;
+    my $row = $dbh->selectrow_hashref(q{
+      SELECT p.* 
+        FROM posts p 
+        LEFT JOIN slugs s ON p.id = s.post_id 
+        WHERE p.id = ? OR s.slug = ?
+        ORDER BY s.slug DESC 
+        LIMIT 1
+      }, {}, $pasteid, $pasteid);
 
     my $when = delete $row->{when};
 
     if ($when) {
+      my $whendt = DateTime->from_epoch(epoch => $when);
+
+      if ($whendt->clone()->add(hours => $row->{expiration}) >= DateTime->now()) {
+        $row->{when} = $whendt->iso8601;
+        return $row;
+      } else {
+        return undef;
+      }
+    } else {
+      return undef;
+    }
+}
+
+get '/raw/:pasteid' => sub {
+    my $c = shift;
+    my $pasteid = $c->param('pasteid');
+    
+    my $row = get_paste($pasteid);
+
+
+    if ($row) {
+        $c->render(text => $row->{paste});
+    } else {
+# 404
+        return $c->reply->not_found;
+    }
+
+};
+get '/pastebin/:pasteid' => sub {
+    my $c = shift;
+    my $pasteid = $c->param('pasteid');
+    
+    my $row = get_paste($pasteid); 
+
+    if ($row) {
         $c->stash($row);
-        $c->stash({when => DateTime->from_epoch(epoch => $when)->iso8601});
         $c->stash({page_tmpl => 'viewer.html'});
         $c->stash({eval => get_eval($pasteid, $row->{paste})});
         $c->stash({paste_id => $pasteid});

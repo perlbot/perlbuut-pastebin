@@ -1,6 +1,6 @@
 [% BLOCK body_style %]
 <style type="text/css" media="screen">
-    #editor {
+    #editor, #paste {
       margin: auto;
       position: relative !important;
       width: 100%;
@@ -9,6 +9,12 @@
 
     html, body, #content {
       width: 100%;
+    }
+    .options label {
+      padding-right: 0.5em;
+    }
+    .options label:not(:first-child) {
+      padding-left: 2em;
     }
     
     @font-face {
@@ -42,8 +48,15 @@
       </div>
       <div class="panel-body">
         <div class="row">
+            <div class="options">
+              <label>Raw Viewer</label>
+              <input type="checkbox" id="raw_editor"/>
+              <label><a href="/raw/[% id %]">Raw Link</a></label>
+              <!-- TODO this should come from the eval server somehow -->
+            </div>
           <div class="col-md-12">
-            <pre id="editor">[% paste | html %]</pre>
+            <pre id="paste">[% paste | html %]</pre>
+            <pre id="editor"></pre>
           </div>
         </div>
         <div class="row">
@@ -65,6 +78,21 @@
     //editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/perl");
 
+    var use_editor = function() {
+      if ($("#raw_editor").is(":checked")) {
+	$("#editor").hide();
+	$("#paste").show();
+      } else {
+        console.log($("#paste").text());
+        editor.setValue($("#paste").text(),0);
+        editor.clearSelection();
+	$("#paste").hide();
+	$("#editor").show();
+      }
+    };
+ 
+    use_editor();
+    $("#raw_editor").on("change", use_editor);
     editor.setReadOnly(true);
     editor.setOptions({maxLines: Infinity, fontFamily: ['AnonymousPro', 'monospace', 'mono']});
     /*function resizeAce() {
