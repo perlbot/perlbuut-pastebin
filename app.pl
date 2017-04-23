@@ -138,7 +138,7 @@ get '/raw/:pasteid' => sub {
 
 
     if ($row) {
-        $c->render(text => $row->{paste});
+        $c->render(text => $row->{paste}, format => "txt");
     } else {
 # 404
         return $c->reply->not_found;
