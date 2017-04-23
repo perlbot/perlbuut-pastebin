@@ -5,6 +5,8 @@
       position: relative !important;
       width: 100%;
       font-variant-ligatures: none;
+      /*font-family: "AnonymousPro";*/
+      font-size: 1em;
     }
 
     html, body, #content {
@@ -94,7 +96,7 @@
     use_editor();
     $("#raw_editor").on("change", use_editor);
     editor.setReadOnly(true);
-    editor.setOptions({maxLines: Infinity, fontFamily: ['AnonymousPro', 'monospace', 'mono']});
+    editor.setOptions({maxLines: Infinity});
     /*function resizeAce() {
       var h = window.innerHeight;
       var ch = h - 400;
