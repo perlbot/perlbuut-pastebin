@@ -42,7 +42,9 @@ $dbh->{sqlite_unicode} = 1;
 
 sub insert_pastebin {
     my ($paste, $who, $what, $where, $expire, $lang) = @_;
-    
+   
+    $expire = undef if !$expire; # make sure it's null if it's empty
+
     $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when', 'expiration', 'language') VALUES (?, ?, ?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time(), $expire, $lang);
     my $id = $dbh->last_insert_id('', '', 'posts', 'id');
 
@@ -117,7 +119,7 @@ sub get_paste {
     if ($when) {
       my $whendt = DateTime->from_epoch(epoch => $when);
 
-      if ($whendt->clone()->add(hours => $row->{expiration}) >= DateTime->now()) {
+      if (!$row->{expiration} || $whendt->clone()->add(hours => $row->{expiration}) >= DateTime->now()) {
         $row->{when} = $whendt->iso8601;
         return $row;
       } else {
