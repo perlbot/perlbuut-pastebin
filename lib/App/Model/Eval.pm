@@ -1,4 +1,4 @@
-package Eval::Perlbot;
+package App::Model::Eval;
 
 use strict;
 use warnings;

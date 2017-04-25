@@ -25,7 +25,7 @@ sub api_get_paste {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
     
-    my $row = get_paste($pasteid); 
+    my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
         my $data = {
@@ -51,7 +51,7 @@ sub api_post_paste {
 
     my @args = map {($c->param($_))} qw/paste username description channel expire language/;
 
-    my $id = insert_pastebin(@args);
+    my $id = $c->paste->insert_pastebin(@args);
     my ($code, $who, $desc, $channel) = @args;
 
     # TODO select which one based on config

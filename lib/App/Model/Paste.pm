@@ -5,6 +5,7 @@ use warnings;
 
 use DBI;
 use Mojo::Base '-base';
+use DateTime;
 
 # TODO config for dbname
 has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
@@ -28,7 +29,8 @@ sub insert_pastebin {
 }
 
 sub get_paste {
-  my ($self, $pasteid) = shift;
+  my ($self, $pasteid) = @_;
+
   my $dbh = $self->dbh;
   my $row = $dbh->selectrow_hashref(q{
     SELECT p.* 

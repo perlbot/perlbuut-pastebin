@@ -63,6 +63,7 @@ sub post_paste {
 
 sub edit_paste {
     my $c = shift;
+
     my $pasteid = $c->param('pasteid');
     
     my $row = $c->paste->get_paste($pasteid);
@@ -71,7 +72,7 @@ sub edit_paste {
         $c->stash({pastedata => $row->{paste}, channels =>$cfg->{announce}{channels}});
         $c->stash({page_tmpl => 'editor.html'});
 
-        $c->render('page');
+        $c->render(template => 'page');
     } else {
         return $c->reply->not_found;
     }
@@ -100,7 +101,7 @@ sub get_paste {
     if ($row) {
         $c->stash($row);
         $c->stash({page_tmpl => 'viewer.html'});
-        $c->stash({eval => get_eval($pasteid, $row->{paste}, $row->{lang})});
+        $c->stash({eval => $c->eval->get_eval($pasteid, $row->{paste}, $row->{lang})});
         $c->stash({paste_id => $pasteid});
 
         $c->render('page');
