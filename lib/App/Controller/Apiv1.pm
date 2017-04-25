@@ -34,7 +34,7 @@ sub api_get_paste {
           username => $row->{who},
           description => $row->{desc},
           language => $row->{language},
-          output => get_eval($pasteid, $row->{paste})
+          output => $c->eval->get_eval($pasteid, $row->{paste}, $row->{language})
         };
 
         $c->render(json => $data);
@@ -61,9 +61,9 @@ sub api_post_paste {
 #    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
 #        warn "I thought this was spam! $type";
 #    } else {
-#        if ($channel) { # TODO config for allowing announcements
-#          IRC::Perlbot::announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
-##        }
+        if ($channel) { # TODO config for allowing announcements
+          $c->perlbot->announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
+        }
 #    }
 
     $c->render(json => {
