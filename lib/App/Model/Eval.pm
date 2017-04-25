@@ -12,7 +12,7 @@ use POE::Filter::Reference;
 use App::Config;
 use App::Memcached;
 
-has cfg => App::Config::get_config('evalserver'); 
+has cfg => sub {App::Config::get_config('evalserver')}; 
 
 sub get_eval {
     my ($self, $paste_id, $code, $lang) = @_;
@@ -37,3 +37,5 @@ sub get_eval {
         return $str;
     }
 }
+
+1;

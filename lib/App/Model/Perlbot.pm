@@ -7,7 +7,7 @@ use Data::Dumper;
 
 use Mojo::Base '-base';
 
-has config => App::Config::get_config('announce');
+has config => sub {App::Config::get_config('announce')};
 
 sub announce {
     my $self = shift;

@@ -7,7 +7,7 @@ use DBI;
 use Mojo::Base '-base';
 
 # TODO config for dbname
-has 'dbh' = DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1});
+has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
 
 sub insert_pastebin {
   my $self = shift;
