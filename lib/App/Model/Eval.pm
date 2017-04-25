@@ -24,7 +24,10 @@ sub get_eval {
         my $socket = IO::Socket::INET->new(  PeerAddr => $self->cfg->{server} //'localhost', PeerPort => $self->cfg->{port} //14400 )
             or die "error: cannot connect to eval server";
 
-        my $refs = $filter->put( [ { code => "perl $code" } ] ); # TODO make this support other langs
+        $lang //= "perl";
+        return undef if ($lang eq 'text');
+
+        my $refs = $filter->put( [ { code => $lang . " $code" } ] );
 
         print $socket $refs->[0]; 
         my $output = do {local $/; <$socket>};
