@@ -24,6 +24,7 @@ sub routes {
   $route->(get => '/edit/:pasteid' => 'edit_paste');
   $route->(get => '/raw/:pasteid' => 'raw_paste');
   $route->(get => '/pastebin/:pasteid' => 'get_paste');
+  $route->(get => '/robots.txt' => 'robots'); # TODO move to static file
 }
 
 sub to_root {
@@ -64,7 +65,7 @@ sub edit_paste {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
     
-    my $row = $dbh->selectrow_hashref("SELECT * FROM posts WHERE id = ? LIMIT 1", {}, $pasteid);
+    my $row = $c->paste->get_paste($pasteid);
 
     if ($row->{when}) {
         $c->stash({pastedata => $row->{paste}, channels =>$cfg->{announce}{channels}});
@@ -80,7 +81,7 @@ sub raw_paste {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
     
-    my $row = get_paste($pasteid);
+    my $row = $c->paste->get_paste($pasteid);
 
 
     if ($row) {
@@ -94,7 +95,7 @@ sub get_paste {
     my $c = shift;
     my $pasteid = $c->param('pasteid');
     
-    my $row = get_paste($pasteid); 
+    my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
         $c->stash($row);

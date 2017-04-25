@@ -25,7 +25,7 @@ sub run_eval {
 
     my $output = $self->eval->get_eval(undef, $code, $language);
 
-    $c->render(json => {evalout => $output});
+    $self->render(json => {evalout => $output});
 };
 
 1;

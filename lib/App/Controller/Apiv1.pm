@@ -6,7 +6,7 @@ use warnings;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub routes {
-  my ($class, $_r) = @_;
+  my ($class, $r) = @_;
 
   my $route = sub {
     my ($method, $route, $action) = @_;
