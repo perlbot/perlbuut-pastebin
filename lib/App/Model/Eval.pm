@@ -4,8 +4,7 @@ use strict;
 use warnings;
 use v5.22;
 
-use Exporter qw/import/;
-our @EXPORT=qw/get_eval/;
+use Mojo::Base '-base';
 
 use Encode qw/decode/;
 use POE::Filter::Reference;
@@ -13,14 +12,16 @@ use POE::Filter::Reference;
 use App::Config;
 use App::Memcached;
 
+has cfg => App::Config::get_config('evalserver'); 
+
 sub get_eval {
-    my ($paste_id, $code) = @_;
+    my ($self, $paste_id, $code, $lang) = @_;
    
     if ($paste_id && (my $cached = $memd->get($paste_id))) {
         return $cached;
     } else {
         my $filter = POE::Filter::Reference->new();
-        my $socket = IO::Socket::INET->new(  PeerAddr => $cfg->{evalserver}{server} //'localhost', PeerPort => $cfg->{evalserver}{port} //14400 )
+        my $socket = IO::Socket::INET->new(  PeerAddr => $self->cfg->{server} //'localhost', PeerPort => $self->cfg->{port} //14400 )
             or die "error: cannot connect to eval server";
 
         my $refs = $filter->put( [ { code => "perl $code" } ] ); # TODO make this support other langs

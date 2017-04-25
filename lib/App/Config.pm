@@ -21,4 +21,10 @@ our $cfg = do {
     $data;
 };
 
+sub get_config {
+  my $key = shift;
+
+  return $cfg->{$key};
+}
+
 1;
