@@ -28,13 +28,16 @@
 
 [% BLOCK page_header %]
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-1">
+      <a href="/">Make a new paste</a>
+    </div>
+    <div class="col-md-2">
       <b>Who: </b>[% who | html %]
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <b>When: </b>[% when %]
     </div>
-    <div class="col-md-6">
+    <div class="col-md-7">
       <b>What: </b>[% what | html %]
     </div>
 </div>
@@ -54,6 +57,7 @@
               <label>Raw Viewer</label>
               <input type="checkbox" id="raw_editor"/>
               <label><a href="/raw/[% pasteid %]">Raw Link</a></label>
+              <label>Language: </label><span>[% language %]</label>
               <!-- TODO this should come from the eval server somehow -->
             </div>
           <div class="col-md-12">
