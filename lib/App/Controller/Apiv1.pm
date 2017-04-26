@@ -77,22 +77,9 @@ sub api_post_paste {
 sub api_get_languages {
   my $c=shift;
 
-  $c->render(json => {languages => [
-    {name => "perl", description => "Perl (blead/git)"},
-    {name => "perl4", description => "Perl 4.0.36"},
-    {name => "perl5.5", description => "Perl 5.5"},
-    {name => "perl5.6", description => "Perl 5.6"},
-    {name => "perl5.8", description => "Perl 5.8"},
-    {name => "perl5.10", description => "Perl 5.10"},
-    {name => "perl5.12", description => "Perl 5.12"},
-    {name => "perl5.14", description => "Perl 5.14"},
-    {name => "perl5.16", description => "Perl 5.16"},
-    {name => "perl5.18", description => "Perl 5.18"},
-    {name => "perl5.20", description => "Perl 5.20"},
-    {name => "perl5.22", description => "Perl 5.22"},
-    {name => "perl5.24", description => "Perl 5.24"},
-    {name => "text", description => "Plain text"},
-  ]});
+  my $lang_ar = $c->languages->get_languages();
+
+  $c->render(json => {languages => $lang_ar});
 };
 
 sub api_get_channels {

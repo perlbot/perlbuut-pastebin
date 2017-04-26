@@ -102,7 +102,7 @@ sub get_paste {
 
     if ($row) {
         $c->stash($row);
-        $c->stash({language_mode => $c->languages->language_to_acemode($row->{language})});
+        $c->stash({language => $c->languages->get_language_hash->{$row->{language}}});
         $c->stash({page_tmpl => 'viewer.html'});
         $c->stash({eval => $c->eval->get_eval($pasteid, $row->{paste}, $row->{language})});
         $c->stash({paste_id => $pasteid});
