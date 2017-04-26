@@ -82,7 +82,8 @@
 <script>
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
-    editor.session.setMode("ace/mode/perl");
+
+    editor.session.setMode("ace/mode/[% language_mode %]");
 
     var use_editor = function() {
       if ($("#raw_editor").is(":checked")) {

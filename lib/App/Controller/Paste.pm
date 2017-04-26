@@ -35,6 +35,7 @@ sub to_root {
 
 sub root {
     my $c    = shift;
+    $c->stash({languages => $c->languages->get_languages});
     $c->stash({pastedata => q{}, channels => $cfg->{announce}{channels}, page_tmpl => 'editor.html'});
     $c->render("page");
 };
@@ -69,6 +70,7 @@ sub edit_paste {
     my $row = $c->paste->get_paste($pasteid);
 
     if ($row->{when}) {
+        $c->stash({languages => $c->languages->get_languages});
         $c->stash({pastedata => $row->{paste}, channels =>$cfg->{announce}{channels}});
         $c->stash({page_tmpl => 'editor.html'});
 
@@ -100,6 +102,7 @@ sub get_paste {
 
     if ($row) {
         $c->stash($row);
+        $c->stash({language_mode => $c->languages->language_to_acemode($row->{language})});
         $c->stash({page_tmpl => 'viewer.html'});
         $c->stash({eval => $c->eval->get_eval($pasteid, $row->{paste}, $row->{language})});
         $c->stash({paste_id => $pasteid});

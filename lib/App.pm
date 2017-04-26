@@ -14,7 +14,7 @@ use App::Controller::Apiv1;
 use App::Model::Paste;
 use App::Model::Eval;
 use App::Model::Perlbot;
-
+use App::Model::Languages;
 
 sub startup {
   my $self = shift;
@@ -36,6 +36,7 @@ sub startup {
   $self->helper(paste   => sub {state $paste   = App::Model::Paste->new});
   $self->helper(eval    => sub {state $eval    = App::Model::Eval->new});
   $self->helper(perlbot => sub {state $perlbot = App::Model::Perlbot->new});
+  $self->helper(languages => sub {state $languages = App::Model::Languages->new});
 
   $self->setup_routes();
 }
