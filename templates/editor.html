@@ -94,22 +94,9 @@
               <!-- TODO this should come from the eval server somehow -->
               <label>Language</label>
               <select name="language" id="language">
-                <option value="perl" data-lang="perl">Perl (blead)</option>
-                <option value="deparse" data-lang="perl">Deparse</option>
-                <option value="ruby" data-lang="ruby">Ruby (2.1)</option>
-                <option value="text" data-lang="text">Text</option>
-                <option value="perl5.24" data-lang="perl">Perl 5.24</option>
-                <option value="perl5.22" data-lang="perl">Perl 5.22</option>
-                <option value="perl5.20" data-lang="perl">Perl 5.20</option>
-                <option value="perl5.18" data-lang="perl">Perl 5.18</option>
-                <option value="perl5.16" data-lang="perl">Perl 5.16</option>
-                <option value="perl5.14" data-lang="perl">Perl 5.14</option>
-                <option value="perl5.12" data-lang="perl">Perl 5.12</option>
-                <option value="perl5.10" data-lang="perl">Perl 5.10</option>
-                <option value="perl5.8" data-lang="perl">Perl 5.8</option>
-                <option value="perl5.6" data-lang="perl">Perl 5.6</option>
-                <option value="perl5.5" data-lang="perl">Perl 5.5</option>
-                <option value="perl4" data-lang="perl">Perl 4.0.36</option>
+		[% FOREACH lang IN languages %]
+                  <option value="[% lang.name %]" data-lang="[% lang.mode %]">[% lang.description %]</option>
+                [% END %]
               </select>
               <label>Expire in</label>
               <select name="expire">

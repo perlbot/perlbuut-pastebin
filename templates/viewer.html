@@ -57,7 +57,7 @@
               <label>Raw Viewer</label>
               <input type="checkbox" id="raw_editor"/>
               <label><a href="/raw/[% pasteid %]">Raw Link</a></label>
-              <label>Language: </label><span>[% language %]</label>
+              <label>Language: </label><span>[% language.description %]</label>
               <!-- TODO this should come from the eval server somehow -->
             </div>
           <div class="col-md-12">
@@ -83,7 +83,7 @@
     var editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
 
-    editor.session.setMode("ace/mode/[% language_mode %]");
+    editor.session.setMode("ace/mode/[% language.mode %]");
 
     var use_editor = function() {
       if ($("#raw_editor").is(":checked")) {
