@@ -9,6 +9,7 @@ my @langs = (
     {name => "perl",      mode => "perl", description => "Perl (blead/git)"},
     {name => "deparse",   mode => "perl", description => "Deparsed Perl"},
     {name => "ruby",      mode => "ruby", description => "Ruby (2.1)"},
+    {name => "javascript", mode => "javascript", description => "Javascript/Node.js"},
     {name => "text",      mode => "text", description => "Plain text"},
     {name => "perl5.24",  mode => "perl", description => "Perl 5.24"},
     {name => "perl5.22",  mode => "perl", description => "Perl 5.22"},
