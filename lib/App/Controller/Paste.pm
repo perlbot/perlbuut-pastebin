@@ -55,7 +55,10 @@ sub post_paste {
 #    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
 #        warn "I thought this was spam! $type";
       if ($channel) { # TODO config for allowing announcements
-        $c->perlbot->announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
+        my $words = qr/nigger|jew|spic|tranny|trannies|fuck|shit|piss|cunt|asshole/i;
+        unless ($code =~ $words || $who =~ $words || $desc =~ $words) {
+          $c->perlbot->announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
+        }
       }
 
     $c->redirect_to('/pastebin/'.$id);
