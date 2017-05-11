@@ -17,6 +17,7 @@ sub routes {
 
   $route->(get => '/pastebin' => 'to_root');
   $route->(get => '/paste' => 'to_root');
+  $route->(get => '/p' => 'to_root');
   $route->(get => '/edit' => 'to_root');
 
   $route->(get => '/' => 'root');
@@ -24,6 +25,7 @@ sub routes {
   $route->(get => '/edit/:pasteid' => 'edit_paste');
   $route->(get => '/raw/:pasteid' => 'raw_paste');
   $route->(get => '/pastebin/:pasteid' => 'get_paste');
+  $route->(get => '/p/:pasteid' => 'get_paste');
   $route->(get => '/robots.txt' => 'robots'); # TODO move to static file
 }
 

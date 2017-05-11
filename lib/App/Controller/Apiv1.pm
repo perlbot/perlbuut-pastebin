@@ -51,26 +51,30 @@ sub api_post_paste {
 
     my @args = map {($c->param($_))} qw/paste username description channel expire language/;
 
-    my $id = $c->paste->insert_pastebin(@args);
+    my $id = $c->paste->insert_pastebin(@args, $c->tx->remote_address);
     my ($code, $who, $desc, $channel) = @args;
 
     # TODO select which one based on config
     # TODO make this use the config, or http params for the url
 
-
 #    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
 #        warn "I thought this was spam! $type";
 #    } else {
         if ($channel) { # TODO config for allowing announcements
-          $c->perlbot->announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
+          unless ($code =~ $words || $who =~ $words || $desc =~ $words) {
+            $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $c->req->url->base()."/p/$id");
+          }
         }
 #    }
 
     $c->render(json => {
-      url => "https://perlbot.pl/pastebin/$id", # TODO base url in config
+      url => $c->req->url->base()."/p/$id", # TODO base url in config
       id => $id,
     });
-    #$c->render(text => "post accepted! $id");
+
+    if ($c->param('redirect')) {
+      $c->redirect_to("/pastebin/$id");
+    }
 };
 
 ## TODO make this come from a perlbot model

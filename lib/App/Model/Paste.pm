@@ -13,11 +13,11 @@ has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseErro
 sub insert_pastebin {
   my $self = shift;
   my $dbh = $self->dbh;
-  my ($paste, $who, $what, $where, $expire, $lang) = @_;
+  my ($paste, $who, $what, $where, $expire, $lang, $ip) = @_;
  
   $expire = undef if !$expire; # make sure it's null if it's empty
 
-  $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when', 'expiration', 'language') VALUES (?, ?, ?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time(), $expire, $lang);
+  $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when', 'expiration', 'language', 'ip') VALUES (?, ?, ?, ?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time(), $expire, $lang, $ip);
   my $id = $dbh->last_insert_id('', '', 'posts', 'id');
 
   # TODO this needs to retry when it fails.
@@ -55,6 +55,20 @@ sub get_paste {
   } else {
     return undef;
   }
+}
+
+sub banned_word_list_re {
+  my $self = shift;
+
+  my $data = $self->dbh->selectall_arrayref("SELECT word FROM wordlist WHERE deleted <> 1");
+
+  #return $re;
+}
+
+sub add_banned_word {
+  my ($self, $word, $who) = @_;
+
+#  $self->
 }
 
 1;

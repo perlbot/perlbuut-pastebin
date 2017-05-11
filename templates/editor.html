@@ -77,7 +77,8 @@
 [% END %]
 
 [% BLOCK body %]
-<form action="/paste" method="POST" id="form">
+<form action="/api/v1/paste" method="POST" id="form">
+    <input type="hidden" name="redirect" value="1" />
     <div id="content" class="container">
       <div class="panel">
         <div class="panel-heading">
