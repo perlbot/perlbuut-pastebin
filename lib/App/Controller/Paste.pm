@@ -21,7 +21,6 @@ sub routes {
   $route->(get => '/edit' => 'to_root');
 
   $route->(get => '/' => 'root');
-  $route->(post => '/paste' => 'post_paste');
   $route->(get => '/edit/:pasteid' => 'edit_paste');
   $route->(get => '/raw/:pasteid' => 'raw_paste');
   $route->(get => '/pastebin/:pasteid' => 'get_paste');
@@ -40,31 +39,6 @@ sub root {
     $c->stash({languages => $c->languages->get_languages});
     $c->stash({pastedata => q{}, channels => $cfg->{announce}{channels}, page_tmpl => 'editor.html'});
     $c->render("page");
-};
-
-sub post_paste {
-    my $c = shift;
-
-    my @args = map {($c->param($_))} qw/paste name desc chan expire language/;
-
-    my $id = $c->paste->insert_pastebin(@args);
-    my ($code, $who, $desc, $channel) = @args;
-
-    # TODO select which one based on config
-# TODO make this use the config, or http params for the url
-
-# FIXME do this properly
-#    if (my $type = App::Spamfilter::is_spam($c, $who, $desc, $code)) {
-#        warn "I thought this was spam! $type";
-      if ($channel) { # TODO config for allowing announcements
-        my $words = qr/nigger|jew|spic|tranny|trannies|fuck|shit|piss|cunt|asshole/i;
-        unless ($code =~ $words || $who =~ $words || $desc =~ $words) {
-          $c->perlbot->announce($channel, $who, substr($desc, 0, 40), "https://perlbot.pl/pastebin/$id");
-        }
-      }
-
-    $c->redirect_to('/pastebin/'.$id);
-    #$c->render(text => "post accepted! $id");
 };
 
 sub edit_paste {

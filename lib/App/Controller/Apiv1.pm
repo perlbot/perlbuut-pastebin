@@ -74,7 +74,7 @@ sub api_post_paste {
     });
 
     if ($c->param('redirect')) {
-      $c->redirect_to("/pastebin/$id");
+      $c->redirect_to("/p/$id");
     }
 };
 
