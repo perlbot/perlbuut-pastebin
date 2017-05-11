@@ -56,12 +56,12 @@
 [% BLOCK page_header %]
 <div class="row">
   <div class="col-md-3">
-    <label for="name">Who: </label>
-    <input size="20" name="name" placeholder="Anonymous" />
+    <label for="username">Who: </label>
+    <input size="20" name="username" placeholder="Anonymous" />
   </div>
   <div class="col-md-3">
-    <label for="chan">Where: </label>
-    <select name="chan" id="chan">
+    <label for="channel">Where: </label>
+    <select name="channel" id="channel">
         <option value="">-- IRC Channel --</option>
     [% FOREACH channel = channels %]
         <option value="[% channel.key %]">[% channel.value %]</option>
@@ -70,7 +70,7 @@
   </div>
   <div class="col-md-6">
     <label for="desc">What: </label>
-    <input size="40" name="desc" placeholder="I broke this" maxlength="40"/>
+    <input size="40" name="description" placeholder="I broke this" maxlength="40"/>
     <input type="button" value="Show supported modules" id="showmodules" style="float:right"/>
   </div>
 </div>
