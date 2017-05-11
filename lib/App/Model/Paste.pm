@@ -60,15 +60,12 @@ sub get_paste {
 sub banned_word_list_re {
   my $self = shift;
 
-  my $data = $self->dbh->selectall_arrayref("SELECT word FROM wordlist WHERE deleted <> 1");
+  my $data = $self->dbh->selectall_arrayref("SELECT word FROM banned_words WHERE deleted <> 1");
 
-  #return $re;
-}
+  my $re_str = join '|', map {quotemeta $_->[0]} @$data;
+  my $re = qr/($re_str)/i;
 
-sub add_banned_word {
-  my ($self, $word, $who) = @_;
-
-#  $self->
+  return $re;
 }
 
 1;
