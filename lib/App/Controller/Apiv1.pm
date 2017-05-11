@@ -61,6 +61,7 @@ sub api_post_paste {
 #        warn "I thought this was spam! $type";
 #    } else {
         if ($channel) { # TODO config for allowing announcements
+          my $words = qr/nigger|jew|spic|tranny|trannies|fuck|shit|piss|cunt|asshole/i;
           unless ($code =~ $words || $who =~ $words || $desc =~ $words) {
             $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $c->req->url->base()."/p/$id");
           }
