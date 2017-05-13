@@ -19,7 +19,6 @@ sub routes {
   $route->(post => '/api/v1/paste' => 'api_post_paste');
   $route->(get => '/api/v1/languages' => 'api_get_languages');
   $route->(get => '/api/v1/channels' => 'api_get_channels');
-  $route->(get => '/api/v1/re' => 'api_get_re');
 }
 
 sub api_get_paste {
@@ -63,7 +62,7 @@ sub api_post_paste {
 #    } else {
         if ($channel) { # TODO config for allowing announcements
           my $words = $c->paste->banned_word_list_re;
-          unless ($code =~ $words || $who =~ $words || $desc =~ $words) {
+          unless ($code =~ $words || $who =~ $words || $desc =~ $words || $c->paste->is_banned_ip($c->tx->remote_address)) {
             $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $c->req->url->base()."/p/$id");
           }
         }
@@ -100,12 +99,5 @@ sub api_get_channels {
     {name => "localhost:perlbot-magnet:#perl", description => "irc.perl.net #perl"},
   ]});
 };
-
-sub api_get_re {
-  my $c=shift;
-
-  use Data::Dumper;
-  $c->render(text => Dumper($c->paste->banned_word_list_re));
-}
 
 1;

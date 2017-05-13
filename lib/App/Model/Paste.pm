@@ -9,6 +9,7 @@ use DateTime;
 
 # TODO config for dbname
 has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
+has 'asndbh' => sub {DBI->connect("dbi:SQLite:dbname=asn.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
 
 sub insert_pastebin {
   my $self = shift;
@@ -66,6 +67,23 @@ sub banned_word_list_re {
   my $re = qr/($re_str)/i;
 
   return $re;
+}
+
+sub get_asn_for_ip {
+  my ($self, $ip) = @_;
+
+  my ($asn) = @{$self->asndbh->selectrow_arrayref("SELECT asn FROM asn WHERE ? >= start AND ? <= end", {}, $ip, $ip) || []}[0];
+  return $asn;
+}
+
+sub is_banned_ip {
+  my ($self, $_ip) = @_;
+  my $ip = sprintf("%03d.%03d.%03d.%03d", split(/\./, $_ip));
+
+  my $asn = $self->get_asn_for_ip($ip);
+  my $row_ar = $self->dbh->selectall_arrayref("SELECT * FROM banned_ips i LEFT JOIN banned_asns a WHERE (i.ip = ? AND i.deleted <> 1) OR (a.asn = ? AND a.deleted <> 1)", {}, $ip, $asn);
+
+  return 0+@$row_ar;
 }
 
 1;
