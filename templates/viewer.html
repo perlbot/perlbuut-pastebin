@@ -102,6 +102,7 @@
     $("#raw_editor").on("change", use_editor);
     editor.setReadOnly(true);
     editor.setOptions({maxLines: Infinity});
+    editor.getSession().setUseWrapMode(true);
     /*function resizeAce() {
       var h = window.innerHeight;
       var ch = h - 400;
