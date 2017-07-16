@@ -9,4 +9,4 @@ requires 'DBD::SQLite';
 requires 'Mojolicious::Lite';
 requires 'Mojolicious::Plugin::TtRenderer';
 requires 'Mojolicious::Plugin::BlogSpam';
-requires 'POE::Filter::Reference';
+requires 'App::EvalServerAdvanced::Protocol';
