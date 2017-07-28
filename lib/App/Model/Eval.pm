@@ -108,7 +108,7 @@ sub async_eval {
                  files => [
                    {filename => '__code', contents => $code, encoding => "utf8"}
                    ], 
-                 prio => {pr_deadline => {}}, 
+                 prio => {pr_realtime => {}}, 
                  sequence => $seq, 
                  encoding => "utf8"};
 
@@ -142,6 +142,7 @@ sub get_eval_reader {
     do {
       ($res, $message, $nbuf) = decode_message($buf);
       $buf = $nbuf;
+      print Dumper($message);
 
       if ($message) {
 
@@ -163,7 +164,6 @@ sub get_eval_reader {
         }
       };
 
-      print Dumper($res, length($buf));
     } while ($res);
 
     return 0;
