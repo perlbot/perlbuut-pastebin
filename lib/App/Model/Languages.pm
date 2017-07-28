@@ -22,6 +22,7 @@ my @langs = (
     {name => "perl5.10",  mode => "perl", description => "Perl 5.10"},
     {name => "perl5.8",   mode => "perl", description => "Perl 5.8"},
     {name => "perl5.6",   mode => "perl", description => "Perl 5.6"},
+    {name => "evalall",  mode => "perl", description => "Perl (EvalAll)"},
     {name => "perl5.5",   mode => "perl", description => "Perl 5.5"},
     {name => "perl4",     mode => "perl", description => "Perl 4.0.36"},
     {name => "perl3",     mode => "perl", description => "Perl 3.0.1.10_44"},
