@@ -16,11 +16,31 @@ use Mojo::IOLoop;
 has cfg => sub {App::Config::get_config('evalserver')}; 
 
 our $id = 0; # global id count for evals
+my %_futures;
+
+sub _adopt_future {
+  my ($self, $id, $future) = @_;
+
+  $_futures{$id} = $future;
+
+  $future->on_ready(sub {
+    print "Cleaning up $id\n";
+    delete $_futures{$id};
+  })
+}
+
 
 sub get_eval {
     my ($self, $paste_id, $code, $langs, $callback) = @_;
+    print "Entering\n";
 
-    if ($paste_id && (my $cached = $memd->get($paste_id))) { # TODO make this use sereal to store objects
+    if (@$langs == 1 && $langs->[0] eq "evalall") {
+      $langs = [qw/perl perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/];
+    }
+
+    use Data::Dumper;
+    print "Languages! ", Dumper($langs);
+    if ($paste_id && (my $cached = $memd->get($paste_id))) {
       $callback->($cached);
     } else {
       # connect to server
@@ -34,7 +54,8 @@ sub get_eval {
 
         for my $lang (@$langs) {
           if ($lang eq 'text') {
-            next;
+            $callback->("");
+            return;
           } else {
             my $future = $self->async_eval($stream, $reader, $lang, $code);
             $futures{$lang} = $future;
@@ -42,10 +63,12 @@ sub get_eval {
             $future->on_done(sub {
               my ($out) = @_;
 
-              print "Future is done\n";
+              print "Future is done for $lang\n";
 
               $output{$lang} = $out;
               delete $futures{$lang};
+
+              print "remaining, ", Dumper(keys %futures);
 
               if (!keys %futures) { # I'm the last one
                 print "Calling memset\n";
@@ -79,6 +102,8 @@ sub async_eval {
   my $future = Future::Mojo->new($loop);
 
   my $seq = $id++;
+
+  $self->_adopt_future($seq, $future);
   my $eval_obj = {language => $lang, 
                  files => [
                    {filename => '__code', contents => $code, encoding => "utf8"}
@@ -110,33 +135,38 @@ sub get_eval_reader {
     print "Reading bytes\n";
 
     $buf = $buf . $bytes;
-    my ($res, $message, $nbuf) = decode_message($buf);
-    $buf = $nbuf;
+    my ($res, $message, $nbuf);
+    do {
+      ($res, $message, $nbuf) = decode_message($buf);
+      $buf = $nbuf;
 
-    if ($message) {
+      if ($message) {
 
-      my $type = ref ($message);
-      $type =~ s/^App::EvalServerAdvanced::Protocol:://;
+        my $type = ref ($message);
+        $type =~ s/^App::EvalServerAdvanced::Protocol:://;
 
-      my $seq = $message->sequence;
+        my $seq = $message->sequence;
 
-      if ($type eq 'Warning') {
-        push @{$warnings{$seq}}, $message->message;
-      } elsif ($type eq 'EvalResponse') {
-        print "Got eval response for $seq\n";
-        my $output = $message->get_contents;
+        if ($type eq 'Warning') {
+          push @{$warnings{$seq}}, $message->message;
+        } elsif ($type eq 'EvalResponse') {
+          print "Got eval response for $seq\n";
+          my $output = $message->get_contents;
 
-        my $warnings = join ' ', @{$warnings{$seq} || []};
+          my $warnings = join ' ', @{$warnings{$seq} || []};
 
-        $futures{$seq}->done($output);
-        print "Future is done: $output\n";
-      }
-    }
+          $futures{$seq}->done($output);
+          print "Future is done: $output\n";
+        }
+      };
+
+      print Dumper($res, length($buf));
+    } while ($res);
   });
 
   return sub {
-    print "WTF\n";
     my ($seq, $future) = @_;
+    print "Registering $seq\n";
     $futures{$seq} = $future;
   }
 }
