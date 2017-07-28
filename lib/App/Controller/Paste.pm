@@ -80,13 +80,20 @@ sub get_paste {
     my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
-        $c->stash($row);
-        $c->stash({language => $c->languages->get_language_hash->{$row->{language}}});
-        $c->stash({page_tmpl => 'viewer.html'});
-        $c->stash({eval => $c->eval->get_eval($pasteid, $row->{paste}, $row->{language})});
-        $c->stash({paste_id => $pasteid});
+        $c->delay(sub {
+            my $delay = shift;
 
-        $c->render('page');
+            $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], $delay->begin(0,1));
+        }, sub {
+            my ($delay, $evalout) = @_;
+            $c->stash($row);
+            $c->stash({language => $c->languages->get_language_hash->{$row->{language}}});
+            $c->stash({page_tmpl => 'viewer.html'});
+            $c->stash({paste_id => $pasteid});
+            $c->stash({eval => $evalout});
+
+            $c->render('page');
+        });
     } else {
         return $c->reply->not_found;
     }
