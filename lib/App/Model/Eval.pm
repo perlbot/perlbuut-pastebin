@@ -21,7 +21,7 @@ sub get_eval {
     my ($self, $paste_id, $code, $langs, $callback) = @_;
 
     if ($paste_id && (my $cached = $memd->get($paste_id))) { # TODO make this use sereal to store objects
-        return $cached;
+      $callback->($cached);
     } else {
       # connect to server
       my %futures;

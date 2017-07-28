@@ -43,7 +43,7 @@ sub api_get_paste {
             username => $row->{who},
             description => $row->{desc},
             language => $output_lang,
-            output => $output
+            output => $output,
             warning => "If this was multi-language paste, you just got a random language",
           };
 

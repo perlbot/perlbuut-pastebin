@@ -268,7 +268,20 @@
         data: {code: code, language: language},
         dataType: "json",
         success: function(data, status) {
-          $('#eval').text(data.evalout);
+	  console.log("data out", data);
+	  var keys = Object.keys(data.evalout);
+	  var outputarr = [];
+
+          if (keys.length > 1) {
+            outputarr = $.map(data.evalout, function(output, lang) {
+             return "[[ "+lang+" ]]\n"+output+"\n\n";
+	    });
+          } else {
+            outputarr = [data.evalout[keys[0]]];
+          }
+          console.log("outputarr", outputarr);
+
+	  $('#eval').text(Array.join(outputarr, "\n"));
         }
       });
     });
