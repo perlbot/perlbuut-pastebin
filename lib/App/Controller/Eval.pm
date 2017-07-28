@@ -20,6 +20,10 @@ sub run_eval {
     my ($self) = @_;
     my $data = $self->req->body_params;
 
+
+
+    $self = $self->inactivity_timeout(3600);
+
     my $code = $data->param('code') // '';
     my $language = $data->param('language') // 'perl';
 

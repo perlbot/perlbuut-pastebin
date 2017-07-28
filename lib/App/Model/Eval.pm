@@ -112,6 +112,9 @@ sub async_eval {
                  sequence => $seq, 
                  encoding => "utf8"};
 
+  use Data::Dumper;
+  print Dumper($eval_obj);
+
   my $message = encode_message(eval => $eval_obj);
 
   $reader->($seq, $future);
@@ -162,6 +165,8 @@ sub get_eval_reader {
 
       print Dumper($res, length($buf));
     } while ($res);
+
+    return 0;
   });
 
   return sub {
