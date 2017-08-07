@@ -49,7 +49,12 @@
       // console.log("found default channel to post: "+servers[hostname]+channel);
        var option = $("option[value='"+servers[hostname]+channel+"']");
       // console.log(option);
-       option.prop('selected', true)
+       option.prop('selected', true);
+     }
+     if (servers[hostname]) {
+       var badoptions = $("select#channel option:not([value^='"+servers[hostname]+"'])");
+       console.log(badoptions);
+       badoptions.remove();
      }
     });
   </script>
