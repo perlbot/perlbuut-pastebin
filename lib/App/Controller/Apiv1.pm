@@ -28,16 +28,27 @@ sub api_get_paste {
     my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
-        my $data = {
-          paste => $row->{paste},
-          when => $row->{when},
-          username => $row->{who},
-          description => $row->{desc},
-          language => $row->{language},
-          output => $c->eval->get_eval($pasteid, $row->{paste}, $row->{language})
-        };
+      $c->delay(sub {
+        my ($delay) = @_;
+          $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], $delay->begin(0, 1))
+        },
+        sub {
+          my ($delay, $output_hr) = @_;
 
-        $c->render(json => $data);
+          my ($output_lang) = keys %$output_hr; # grab a random output value, should be the first one since multilang support isn't working yet
+          my ($output) = $output_hr->{$output_lang};
+          my $data = {
+            paste => $row->{paste},
+            when => $row->{when},
+            username => $row->{who},
+            description => $row->{desc},
+            language => $output_lang,
+            output => $output,
+            warning => "If this was multi-language paste, you just got a random language",
+          };
+
+          $c->render(json => $data);
+        });
     } else {
 # 404
         return $c->reply->not_found;

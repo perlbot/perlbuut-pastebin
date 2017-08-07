@@ -69,12 +69,14 @@
             <pre id="editor"></pre>
           </div>
         </div>
+	[% FOR lang IN eval.keys %]
         <div class="row">
           <div id="eval" class="col-md-12">
-            <h3>Program Output:</h3>
-            <pre>[% eval | html %]</pre>
+            <h3>Program Output as [% lang %]:</h3>
+            <pre>[% eval.$lang | html %]</pre>
           </div>
         </div>
+        [% END %]
         <div class="panel-footer">
           <input value="Fork and Edit" type="submit" id="submit" />
         </div>

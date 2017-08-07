@@ -10,75 +10,170 @@ use App::EvalServerAdvanced::Protocol;
 
 use App::Config;
 use App::Memcached;
+use Future::Mojo;
+use Mojo::IOLoop;
 
 has cfg => sub {App::Config::get_config('evalserver')}; 
 
+our $id = 0; # global id count for evals
+my %_futures;
+
+sub _adopt_future {
+  my ($self, $id, $future) = @_;
+
+  $_futures{$id} = $future;
+
+  $future->on_ready(sub {
+    print "Cleaning up $id\n";
+    delete $_futures{$id};
+  })
+}
+
+
 sub get_eval {
-    my ($self, $paste_id, $code, $lang) = @_;
-   
+    my ($self, $paste_id, $code, $langs, $callback) = @_;
+    print "Entering\n";
+
+    if (@$langs == 1 && $langs->[0] eq "evalall") {
+      $langs = [qw/perl perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/];
+    }
+
+    use Data::Dumper;
+    print "Languages! ", Dumper($langs);
     if ($paste_id && (my $cached = $memd->get($paste_id))) {
-        return $cached;
+      $callback->($cached);
     } else {
+      # connect to server
+      my %futures;
 
-        $lang //= "perl";
-        return undef if ($lang eq 'text');
+      my $server = $self->eval_connect(sub {
+        my ($loop, $err, $stream) = @_;
 
-        my $str = eval {$self->do_singleeval($lang, $code)};
+        my $reader = $self->get_eval_reader($stream);
+        my %output;
 
-        return "ERROR: evalserver broken: $@" if $@;
+        for my $lang (@$langs) {
+          if ($lang eq 'text') {
+            $callback->("");
+            return;
+          } else {
+            my $future = $self->async_eval($stream, $reader, $lang, $code);
+            $futures{$lang} = $future;
 
-        $memd->set($paste_id, $str) if ($paste_id);
+            $future->on_done(sub {
+              my ($out) = @_;
 
-        return $str;
+              print "Future is done for $lang\n";
+
+              $output{$lang} = $out;
+              delete $futures{$lang};
+
+              print "remaining, ", Dumper(keys %futures);
+
+              if (!keys %futures) { # I'm the last one
+                print "Calling memset\n";
+                $memd->set($paste_id, \%output) if ($paste_id);
+                print "Returning output to delay\n";
+                use Data::Dumper;
+                print Dumper(\%output);
+                $callback->(\%output);
+              }
+            });
+          }
+        }
+      });
     }
 }
 
-sub do_singleeval {
-  my ($self, $type, $code) = @_;
+sub eval_connect {
+  my ($self, $cb) = @_;
 
-  my $socket = IO::Socket::INET->new(PeerAddr => $self->cfg->{server} //'localhost', PeerPort => $self->cfg->{port} //14401)
-    or die "error: cannot connect to eval server";
+  my $loop = Mojo::IOLoop->singleton;
 
-  my $eval_obj = {language => $type, files => [{filename => '__code', contents => $code, encoding => "utf8"}], prio => {pr_realtime=>{}}, sequence => 1, encoding => "utf8"};
+  my $socket = $loop->client({address => $self->cfg->{server} // 'localhost', port => $self->cfg->{port} // 14401}, $cb);
 
-  $socket->autoflush(1);
-  print $socket encode_message(eval => $eval_obj);
+  return $socket;
+}
 
-  my $buf = '';
-  my $data = '';
-  my $resultstr = "Failed to read a message";
+sub async_eval {
+  my ($self, $stream, $reader, $lang, $code) = @_;
 
-  my $message = $self->read_message($socket);
+  my $loop = Mojo::IOLoop->singleton;
+  my $future = Future::Mojo->new($loop);
 
-  if (ref($message) =~ /Warning$/) {
-    return $message->message;
-  } else {
-    return $message->get_contents;
+  my $seq = $id++;
+
+  $self->_adopt_future($seq, $future);
+  my $eval_obj = {language => $lang, 
+                 files => [
+                   {filename => '__code', contents => $code, encoding => "utf8"}
+                   ], 
+                 prio => {pr_realtime => {}}, 
+                 sequence => $seq, 
+                 encoding => "utf8"};
+
+  use Data::Dumper;
+  print Dumper($eval_obj);
+
+  my $message = encode_message(eval => $eval_obj);
+
+  $reader->($seq, $future);
+  $stream->write($message);
+
+  return ($seq => $future);
+}
+
+sub get_eval_reader {
+  my ($self, $stream) = @_;
+
+  my %futures;
+  my %warnings;
+
+  my $buf;
+  my $out;
+
+  $stream->on(read => sub {
+    my ($stream, $bytes) = @_;
+
+    print "Reading bytes\n";
+
+    $buf = $buf . $bytes;
+    my ($res, $message, $nbuf);
+    do {
+      ($res, $message, $nbuf) = decode_message($buf);
+      $buf = $nbuf;
+      print Dumper($message);
+
+      if ($message) {
+
+        my $type = ref ($message);
+        $type =~ s/^App::EvalServerAdvanced::Protocol:://;
+
+        my $seq = $message->sequence;
+
+        if ($type eq 'Warning') {
+          push @{$warnings{$seq}}, $message->message;
+        } elsif ($type eq 'EvalResponse') {
+          print "Got eval response for $seq\n";
+          my $output = $message->get_contents;
+
+          my $warnings = join ' ', @{$warnings{$seq} || []};
+
+          $futures{$seq}->done($output);
+          print "Future is done: $output\n";
+        }
+      };
+
+    } while ($res);
+
+    return 0;
+  });
+
+  return sub {
+    my ($seq, $future) = @_;
+    print "Registering $seq\n";
+    $futures{$seq} = $future;
   }
 }
-
-
-sub read_message {
-  my ($self, $socket) = @_;
-
-  my $header;
-  $socket->read($header, 8) or die "Couldn't read from socket";
-
-  my ($reserved, $length) = unpack "NN", $header;
-
-  die "Invalid packet" unless $reserved == 1;
-
-  my $buffer;
-  $socket->read($buffer, $length) or die "Couldn't read from socket2";
-
-  my ($res, $message, $nbuf) = decode_message($header . $buffer);
-
-
-  die "Data left over in buffer" unless $nbuf eq '';
-  die "Couldn't decode packet" unless $res;
-
-  return $message;
-}
-
 
 1;

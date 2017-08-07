@@ -20,12 +20,25 @@ sub run_eval {
     my ($self) = @_;
     my $data = $self->req->body_params;
 
+
+
+    $self = $self->inactivity_timeout(3600);
+
     my $code = $data->param('code') // '';
     my $language = $data->param('language') // 'perl';
 
-    my $output = $self->eval->get_eval(undef, $code, $language);
+    $self->delay(sub {
+      my $delay = shift;
+      $self->eval->get_eval(undef, $code, [$language], $delay->begin(0,1));
 
-    $self->render(json => {evalout => $output});
-};
+      return 1;
+    },
+    sub {
+      my $delay = shift;
+      my ($output) = @_;
+
+      $self->render(json => {evalout => $output});
+    })
+}
 
 1;

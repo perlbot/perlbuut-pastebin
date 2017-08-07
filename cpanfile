@@ -10,3 +10,4 @@ requires 'Mojolicious::Lite';
 requires 'Mojolicious::Plugin::TtRenderer';
 requires 'Mojolicious::Plugin::BlogSpam';
 requires 'App::EvalServerAdvanced::Protocol';
+requires 'Future::Mojo';
