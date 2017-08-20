@@ -287,8 +287,9 @@
             outputarr = [data.evalout[keys[0]]];
           }
           console.log("outputarr", outputarr);
+	  console.log(outputarr.join("\n"));
 
-	  $('#eval').text(Array.join(outputarr, "\n"));
+	  $('#eval').text(outputarr.join("\n"));
         }
       });
     });
