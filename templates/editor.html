@@ -208,6 +208,8 @@
     editor = ace.edit("editor");
     //editor.setTheme("ace/theme/twilight");
 
+    //safely delete all bindings
+    editor.keyBinding.$defaultHandler.commandKeyBinding = {}
 
     $("#language").on('change', function () {
       var language = $('#language option').filter(':selected').attr('data-lang');
