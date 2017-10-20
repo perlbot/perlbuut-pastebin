@@ -125,6 +125,15 @@
     editor.setReadOnly(true);
     editor.setOptions({maxLines: Infinity});
     editor.getSession().setUseWrapMode(true);
+    
+    //safely delete all bindings
+    var save_keys={};
+    Object.keys(editor.keyBinding.$defaultHandler.commandKeyBinding)
+        .filter((value) => value.match(/(?:(?:backspac|hom)e|d(?:elete|own)|(?:righ|lef)t|end|up)/))
+        .forEach((key) => save_keys[key] = editor.keyBinding.$defaultHandler.commandKeyBinding[key]); 
+
+    editor.keyBinding.$defaultHandler.commandKeyBinding = save_keys;
+    
     /*function resizeAce() {
       var h = window.innerHeight;
       var ch = h - 400;
