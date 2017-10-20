@@ -88,10 +88,11 @@ sub get_paste {
             my ($delay, $evalout) = @_;
             $c->stash($row);
             $c->stash({language => $c->languages->get_language_hash->{$row->{language}}});
+            $c->stash({all_langs => $c->languages->get_language_hash});
             $c->stash({page_tmpl => 'viewer.html'});
             $c->stash({paste_id => $pasteid});
             $c->stash({eval => $evalout});
-            $c->stash({perl_sort_versions => \&{$c->languages->perl_sort_versions}});
+            $c->stash({perl_sort_versions => \&App::Model::Languages::perl_sort_versions});
 
             $c->render('page');
         });

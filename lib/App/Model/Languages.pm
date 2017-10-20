@@ -61,8 +61,11 @@ sub get_languages {
   return \@langs
 }
 
-sub perl_sort_languages {
-  return sort {$langs{$a}//0 <=> $langs{$b}//0} @_;
+sub perl_sort_versions {
+  my @in = @{shift()};
+  my @ranks = map {$langs{$_}{rank}} @in;
+  my @ret = sort {$langs{$a}{rank} <=> $langs{$b}{rank}} @in;
+  return @ret;
 }
 
 1;
