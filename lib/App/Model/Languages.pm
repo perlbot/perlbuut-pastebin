@@ -31,6 +31,13 @@ my @langs = (
 
 );
 
+# Add a sorting rank to each language
+for my $i (0..$#langs) {
+  my $r = $i; 
+  $r = -1 if ($langs[$i]{name} eq 'perl'); # specially handle blead as being top dog
+  $langs[$i]{rank} = $r;
+}
+
 my %langs = (
   map {$_->{name} => $_} @langs,
 );
@@ -47,6 +54,10 @@ sub get_language_hash {
 
 sub get_languages {
   return \@langs
+}
+
+sub perl_sort_languages {
+  return sort {$langs{$a}//0 <=> $langs{$b}//0} @_;
 }
 
 1;

@@ -91,6 +91,7 @@ sub get_paste {
             $c->stash({page_tmpl => 'viewer.html'});
             $c->stash({paste_id => $pasteid});
             $c->stash({eval => $evalout});
+            $c->stash({perl_sort_versions => \&{$c->languages->perl_sort_versions}});
 
             $c->render('page');
         });

@@ -87,7 +87,7 @@
             <div class="col-md-1"></div>
             <table id="eval" class="col-md-8">
             <tr><th>Language</th><th>Output</th></tr>
-	    [% FOR lang IN eval.keys.sort %]
+	    [% FOR lang IN perl_sort_versions(eval.keys) %]
               <tr><td style="width: 1px; white-space: nowrap; padding-right: 5em;">[% lang %]</td><td><pre>[% eval.$lang | html %]</pre></td></tr>
 	    [% END %]
             </table>

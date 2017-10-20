@@ -210,7 +210,7 @@
 
     //safely delete all bindings
     var save_keys={};
-    Object.keys(editor.keyBinding.$defaultHandler.commandKeyBinding)\
+    Object.keys(editor.keyBinding.$defaultHandler.commandKeyBinding)
         .filter((value) => value.match(/(?:(?:backspac|hom)e|d(?:elete|own)|(?:righ|lef)t|end|up)/))
         .forEach((key) => save[key] = editor.keyBinding.$defaultHandler.commandKeyBinding[key]); 
 
