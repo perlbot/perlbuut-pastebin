@@ -12,6 +12,7 @@ my @langs = (
     {name => "ruby",      mode => "ruby", description => "Ruby (2.1)"},
     {name => "javascript", mode => "javascript", description => "Javascript/Node.js"},
     {name => "text",      mode => "text", description => "Plain text"},
+    {name => "evalall",   mode => "perl", description => "Perl (EvalAll)"},
     {name => "perl5.24",  mode => "perl", description => "Perl 5.24"},
     {name => "perl5.22",  mode => "perl", description => "Perl 5.22"},
     {name => "perl5.20",  mode => "perl", description => "Perl 5.20"},
@@ -22,7 +23,6 @@ my @langs = (
     {name => "perl5.10",  mode => "perl", description => "Perl 5.10"},
     {name => "perl5.8",   mode => "perl", description => "Perl 5.8"},
     {name => "perl5.6",   mode => "perl", description => "Perl 5.6"},
-    {name => "evalall",  mode => "perl", description => "Perl (EvalAll)"},
     {name => "perl5.5",   mode => "perl", description => "Perl 5.5"},
     {name => "perl5.4",   mode => "perl", description => "Perl 5.004"},
     {name => "perl5.3",   mode => "perl", description => "Perl 5.003"},
@@ -33,6 +33,7 @@ my @langs = (
     {name => "perl3",     mode => "perl", description => "Perl 3.0.1.10_44"},
     {name => "perl2",     mode => "perl", description => "Perl 2"},
     {name => "perl1",     mode => "perl", description => "Perl 1"},
+    {name => "cperl",     mode => "perl", description => "CPerl 5.26"},
 
 );
 
