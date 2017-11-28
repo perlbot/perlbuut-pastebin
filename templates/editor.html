@@ -222,6 +222,11 @@
       console.log("language: ", language);
       editor.session.setMode("ace/mode/" + language);
     });
+    
+    var channel = $(location).attr('hash');
+    if (channel == "#perl6") {
+     $("#language").val("perl6").change();
+    }
 
     editor.session.setMode("ace/mode/perl");
 

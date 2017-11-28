@@ -7,7 +7,8 @@ use Mojo::Base '-base';
 
 my @langs = (
     {name => "perl5.26",  mode => "perl", description => "Perl 5.26"},
-    {name => "perl",      mode => "perl", description => "Perl (blead/git)"},
+    {name => "perl",      mode => "perl", description => "Perl 5 (blead/git)"},
+    {name => "perl6",     mode => "perl", description => "Rakudo Star / Perl 6"},
     {name => "deparse",   mode => "perl", description => "Deparsed Perl"},
     {name => "ruby",      mode => "ruby", description => "Ruby (2.1)"},
     {name => "javascript", mode => "javascript", description => "Javascript/Node.js"},
