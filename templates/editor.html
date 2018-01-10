@@ -10,7 +10,7 @@
     }
 
     #paste {
-      font-family: 'mono'
+      font-family: 'monospace'
     }
 
     html, body, #content {
@@ -232,6 +232,8 @@
     var channel = $(location).attr('hash');
     if (channel == "#perl6") {
      $("#language").val("perl6").change();
+    } else if (channel == "#cobol") {
+     $("#language").val("cobol").change();
     }
 
     editor.session.setMode("ace/mode/perl");
