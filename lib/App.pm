@@ -11,6 +11,7 @@ use App::Config;
 use App::Controller::Paste;
 use App::Controller::Eval;
 use App::Controller::Apiv1;
+use App::Controller::Apiv2;
 use App::Model::Paste;
 use App::Model::Eval;
 use App::Model::Perlbot;
@@ -44,9 +45,11 @@ sub startup {
 sub setup_routes {
   my $self = shift;
 
+  # TODO some kind of app config for this
   App::Controller::Paste->routes($self->routes);
   App::Controller::Eval->routes($self->routes);
   App::Controller::Apiv1->routes($self->routes);
+  App::Controller::Apiv2->routes($self->routes);
 }
 
 1;
