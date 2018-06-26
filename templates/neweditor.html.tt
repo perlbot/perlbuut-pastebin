@@ -1,0 +1,101 @@
+[% BLOCK body_style %]
+<link rel="stylesheet" type="text/css" href="/static/editor.css" />
+<script src="/static/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/editor.js"></script>
+[% END %]
+
+[% BLOCK page_header %]
+<div class="row">
+  <div class="col-md-3">
+    <label for="username">Who: </label>
+    <input size="20" name="username" placeholder="Anonymous" />
+  </div>
+  <div class="col-md-3">
+    <label for="channel">Where: </label>
+    <select name="channel" id="channel">
+        <option value="">-- IRC Channel --</option>
+    [% FOREACH channel = channels %]
+        <option value="[% channel.key %]">[% channel.value %]</option>
+    [% END %]
+    </select>
+  </div>
+  <div class="col-md-5">
+    <label for="desc">What: </label>
+    <input size="40" name="description" placeholder="I broke this" maxlength="40"/>
+    <input type="button" value="Show supported modules" id="showmodules" style="float:right"/>
+  </div>
+  <div class="col-md-1">
+    <a href="http://www.cafepress.com/perlbot">Perlbot Merch</a>
+  </div>
+</div>
+[% END %]
+
+[% BLOCK body %]
+<form action="/api/v1/paste" method="POST" id="form">
+    <input type="hidden" name="redirect" value="1" />
+    <div id="content" class="container">
+      <div class="panel">
+        <div class="panel-heading">
+         [% PROCESS page_header %]
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <div class="row">
+          <div id="editors" class="col-md-12">
+            <div class="options">
+              <!-- TODO this should come from the eval server somehow -->
+              <label>Expire in</label>
+              <select name="expire">
+                <option value="1">1 hour</option>
+                <option value="8">8 hours</option>
+                <option value="24">24 hours</option>
+                <option value="48">2 days</option>
+                <option value="168" selected>1 week</option>
+                <option value="720">1 month</option>
+                <option value="8760">1 year</option>
+                <option value="">Never</option>
+              </select>
+            </div>
+
+            <!-- BEGIN LOOP -->
+            <div id="file_1" class="file">
+              <div class="fileheader col-md-12">
+                <label>Filename</label>
+                <input type="text" name="filename_1" placeholder=""/>
+                <label>Language</label>
+                <select name="filelang_1" id="filelang_1">
+                  [% FOREACH lang IN languages %]
+                    <option value="[% lang.name %]" data-lang="[% lang.mode %]">[% lang.description %]</option>
+                  [% END %]
+                </select>
+                <input type="file" name="fileupload_1" />
+                <!-- use a hidden field when we've been rebuilt <input type="hidden" name="fileupload_1" /> -->
+                <input type="submit" name="filedelete_1" value="Delete File"/>
+                <label>Raw Editor</label>
+                <input type="checkbox" id="raw_editor_1"/>
+              </div>
+              <div class="filecontents col-md-12">
+                <textarea name="filecontents_1" id="filecontents_1" cols="80" rows="25">[% pastedata | html %]</textarea>
+                <pre id="editor"></pre>
+              </div>
+            </div>
+            <!-- END LOOP -->
+          </div>
+          <div id="evalcol" class="hidden">
+            <h3>Program Output:</h3>
+            <pre id="eval">[% eval | html %]</pre>
+          </div>
+          <div id="modules" class="hidden">
+            <h3>Supported modules</h3>
+            Under construction
+          </div>
+        </div>
+        <div class="panel-footer">
+          <input value="Submit" type="submit" id="submit" />
+          <input value="Check Eval" type="button" id="evalme" />
+        </div>
+
+    </div>
+</form>
+[% END %]
