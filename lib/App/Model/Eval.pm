@@ -35,7 +35,7 @@ sub get_eval {
     print "Entering\n";
 
     if (@$langs == 1 && $langs->[0] eq "evalall") {
-      $langs = [qw/perl perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/];
+      $langs = [qw/perl perl5.28 perl5.26 perl5.26t perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/];
     }
 
     use Data::Dumper;
