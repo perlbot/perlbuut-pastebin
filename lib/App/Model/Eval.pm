@@ -153,6 +153,7 @@ sub get_eval_reader {
 
         if ($type eq 'Warning') {
           push @{$warnings{$seq}}, $message->message;
+          $futures{$seq}->done($message->message);
         } elsif ($type eq 'EvalResponse') {
           print "Got eval response for $seq\n";
           my $output = $message->get_contents;
