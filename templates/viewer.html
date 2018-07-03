@@ -74,8 +74,7 @@
           </div>
         </div>
         <div class="row">
-	  [% IF eval.keys.size == 0 %]
-	    ZERO
+	  [% IF eval.keys.size == 0 || !eval.keys.size.defined %]
 	  [% ELSIF eval.keys.size == 1 %]
             <div id="eval" class="col-md-12">
               <h3>Program Output</h3>
