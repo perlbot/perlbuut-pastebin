@@ -6,7 +6,7 @@ use warnings;
 use Mojo::Base '-base';
 
 my @langs = (
-    {name => "perl5.26",  mode => "perl", description => "Perl 5.26"},
+    {name => "perl5.28",  mode => "perl", description => "Perl 5.28"},
     {name => "perl6",     mode => "perl", description => "Rakudo Star / Perl 6"},
     {name => "ruby",      mode => "ruby", description => "Ruby (2.1)"},
     {name => "javascript", mode => "javascript", description => "Javascript/Node.js"},
@@ -17,6 +17,8 @@ my @langs = (
     {name => "perl",      mode => "perl", description => "Perl 5 (blead/git)"},
     {name => "deparse",   mode => "perl", description => "Deparsed Perl"},
     {name => "evalall",   mode => "perl", description => "Perl (EvalAll)"},
+    {name => "perl5.26",  mode => "perl", description => "Perl 5.26"},
+    {name => "perl5.26t",  mode => "perl", description => "Perl 5.26 (Threaded)"},
     {name => "perl5.24",  mode => "perl", description => "Perl 5.24"},
     {name => "perl5.22",  mode => "perl", description => "Perl 5.22"},
     {name => "perl5.20",  mode => "perl", description => "Perl 5.20"},
