@@ -20,6 +20,8 @@ use App::Model::Languages;
 sub startup {
   my $self = shift;
 
+  $self->config($cfg->{mojolicious});
+
   $self->plugin('tt_renderer' => {
     template_options => {
       PRE_CHOMP => 1,
