@@ -5,6 +5,7 @@ use warnings;
 
 use App::Config;
 use Mojo::Base 'Mojolicious::Controller';
+use Mojo::IOLoop;
 
 sub routes {
   my ($class, $r) = @_;

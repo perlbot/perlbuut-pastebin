@@ -103,6 +103,9 @@ sub async_eval {
 
   my $seq = $id++;
 
+  # try to fix bash?
+  $code =~ s/\r//g;
+
   $self->_adopt_future($seq, $future);
   my $eval_obj = {language => $lang, 
                  files => [
