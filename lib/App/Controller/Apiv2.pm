@@ -93,8 +93,10 @@ sub api_post_paste {
 #    } else {
         if ($channel) { # TODO config for allowing announcements
           my $words = $c->paste->banned_word_list_re;
+          my $url = $c->req->url->base()."/p/$id";
+          $url =~ s|http:|https:|;
           unless ($code =~ $words || $who =~ $words || $desc =~ $words || $c->paste->is_banned_ip($c->tx->remote_address)) {
-            $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $c->req->url->base()."/p/$id");
+            $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $url);
           }
         }
 #    }

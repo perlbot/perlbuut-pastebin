@@ -22,6 +22,7 @@ sub routes {
   $route->(get => '/edit' => 'to_root');
 
   $route->(get => '/' => 'root');
+  $route->(get => '/headers' => 'headers');
   $route->(get => '/edit/:pasteid' => 'edit_paste');
   $route->(get => '/raw/:pasteid' => 'raw_paste');
   $route->(get => '/pastebin/:pasteid' => 'get_paste');
@@ -111,5 +112,11 @@ sub robots  {
 Disallow: /}, format => 'txt');
 };
 
+sub headers {
+  my ($c) = @_;
+
+  use Data::Dumper;
+  $c->render(text => Dumper($c->req));
+}
 
 1;
