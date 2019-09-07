@@ -29,13 +29,18 @@ sub _adopt_future {
   })
 }
 
+my @full_langs = qw/perl perl5.30 perl5.28 perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6 perl5.8.8 perl5.8.4 perl5.10.0/;
 
 sub get_eval {
     my ($self, $paste_id, $code, $langs, $callback) = @_;
     print "Entering\n";
 
     if (@$langs == 1 && $langs->[0] eq "evalall") {
-      $langs = [qw/perl perl5.28 perl5.26 perl5.26t perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6 perl5.8.8 perl5.10.0/];
+      $langs = [@full_langs];
+    } elsif (@$langs == 1 && $langs->[0] eq "evaltall") {
+      $langs = [map {$_."t"} @full_langs];
+    } elsif (@$langs == 1 && $langs->[0] eq "evalrall") {
+      $langs = [map {$_, $_."t"} @full_langs];
     }
 
     use Data::Dumper;
