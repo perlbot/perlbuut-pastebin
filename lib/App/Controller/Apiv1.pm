@@ -30,10 +30,12 @@ sub api_get_paste {
     if ($row) {
       $c->delay(sub {
         my ($delay) = @_;
-          $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], $delay->begin(0, 1))
+          $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $delay->begin(0, 1))
         },
         sub {
-          my ($delay, $output_hr) = @_;
+          my ($delay, $evalres) = @_;
+
+          my ($status, $output_hr) = $evalres->@{qw/status output/};
 
           my ($output_lang) = keys %$output_hr; # grab a random output value, should be the first one since multilang support isn't working yet
           my ($output) = $output_hr->{$output_lang};
@@ -44,6 +46,7 @@ sub api_get_paste {
             description => $row->{desc},
             language => $output_lang,
             output => $output,
+            status => $status,
             warning => "If this was multi-language paste, you just got a random language",
           };
 

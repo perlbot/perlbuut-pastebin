@@ -29,9 +29,14 @@ sub _adopt_future {
   })
 }
 
+sub _get_cache {
+  my ($key) = @_;
+  return unless defined $key;
+  return $memd->get($key);
+}
 
 sub get_eval {
-    my ($self, $paste_id, $code, $langs, $callback) = @_;
+    my ($self, $paste_id, $code, $langs, $wait, $callback) = @_;
     print "Entering\n";
 
     if (@$langs == 1 && $langs->[0] eq "evalall") {
@@ -40,7 +45,7 @@ sub get_eval {
 
     use Data::Dumper;
     print "Languages! ", Dumper($langs);
-    if ($paste_id && (my $cached = $memd->get($paste_id))) {
+    if ($paste_id && (my $cached = _get_cache($paste_id))) {
       $callback->($cached);
     } else {
       # connect to server
@@ -52,9 +57,16 @@ sub get_eval {
         my $reader = $self->get_eval_reader($stream);
         my %output;
 
+        # TODO make running status messages per langs?
+        $memd->set($paste_id, {status => 'running', output => {}});
+
+        if (!$wait && @$langs != 1) {
+          $callback->({status => 'running', output => {}});
+        }
+
         for my $lang (@$langs) {
           if ($lang eq 'text') {
-            $callback->("");
+            $callback->({status => "ready", output => {}});
             return;
           } else {
             my $future = $self->async_eval($stream, $reader, $lang, $code);
@@ -72,11 +84,13 @@ sub get_eval {
 
               if (!keys %futures) { # I'm the last one
                 print "Calling memset\n";
-                $memd->set($paste_id, \%output) if ($paste_id);
+                $memd->set($paste_id, {status => 'ready', output => \%output}) if ($paste_id);
                 print "Returning output to delay\n";
                 use Data::Dumper;
                 print Dumper(\%output);
-                $callback->(\%output);
+                if ($wait || @$langs == 1) {
+                  $callback->({status => "ready", output => \%output});
+                }
               }
             });
           }

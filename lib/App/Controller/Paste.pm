@@ -85,15 +85,18 @@ sub get_paste {
         $c->delay(sub {
             my $delay = shift;
 
-            $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], $delay->begin(0,1));
+            $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $delay->begin(0,1));
         }, sub {
-            my ($delay, $evalout) = @_;
+            my ($delay, $evalres) = @_;
+
+            my ($status, $evalout) = $evalres->@{qw/status output/};
             $c->stash($row);
             $c->stash({language => $c->languages->get_language_hash->{$row->{language}}});
             $c->stash({all_langs => $c->languages->get_language_hash});
             $c->stash({page_tmpl => 'viewer.html'});
             $c->stash({paste_id => $pasteid});
             $c->stash({eval => $evalout});
+            $c->stash({eval_status => $status});
             $c->stash({perl_sort_versions => \&App::Model::Languages::perl_sort_versions});
 
             $c->render('page');
