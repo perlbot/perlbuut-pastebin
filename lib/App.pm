@@ -22,6 +22,8 @@ sub startup {
 
   $self->config($cfg->{mojolicious});
 
+  $self->plugin('RemoteAddr');
+
   $self->plugin('tt_renderer' => {
     template_options => {
       PRE_CHOMP => 1,

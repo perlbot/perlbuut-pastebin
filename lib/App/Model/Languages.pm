@@ -8,6 +8,7 @@ use Mojo::Base '-base';
 my @langs = (
     {name => "perl5.28",  mode => "perl", description => "Perl 5.28"},
     {name => "perl6",     mode => "perl", description => "Rakudo Star / Perl 6"},
+    {name => "bash",      mode => "bash", description => "Bash"},
     {name => "ruby",      mode => "ruby", description => "Ruby (2.1)"},
     {name => "javascript", mode => "javascript", description => "Javascript/Node.js"},
     {name => "tcc",       mode => "c_cpp",    description => "TCC 0.9.27"},
@@ -40,6 +41,8 @@ my @langs = (
     {name => "perl2",     mode => "perl", description => "Perl 2"},
     {name => "perl1",     mode => "perl", description => "Perl 1"},
     {name => "cperl",     mode => "perl", description => "CPerl 5.26"},
+    {name => "perl5.8.8",   mode => "perl", description => "Perl 5.8.8 (Known bugs)"},
+    {name => "perl5.10.0",   mode => "perl", description => "Perl 5.10.0 (Known bugs)"},
 
 );
 

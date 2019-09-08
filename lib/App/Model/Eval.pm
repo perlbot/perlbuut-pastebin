@@ -35,7 +35,7 @@ sub get_eval {
     print "Entering\n";
 
     if (@$langs == 1 && $langs->[0] eq "evalall") {
-      $langs = [qw/perl perl5.28 perl5.26 perl5.26t perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/];
+      $langs = [qw/perl perl5.28 perl5.26 perl5.26t perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6 perl5.8.8 perl5.10.0/];
     }
 
     use Data::Dumper;
@@ -102,6 +102,9 @@ sub async_eval {
   my $future = Future::Mojo->new($loop);
 
   my $seq = $id++;
+
+  # try to fix bash?
+  $code =~ s/\r//g;
 
   $self->_adopt_future($seq, $future);
   my $eval_obj = {language => $lang, 
