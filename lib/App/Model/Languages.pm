@@ -21,7 +21,7 @@ my @langs = (
     {name => "evalall",   mode => "perl", description => "Perl (EvalAll) (major unthreaded)"},
     {name => "evaltall",   mode => "perl", description => "Perl (EvalAll) (major threaded)"},
     {name => "evalrall",   mode => "perl", description => "Perl (EvalAll) (major un+threaded)"},
-    {name => "evalrall",   mode => "perl", description => "Perl (EvalY'All) (EVERYTHING)"},
+    {name => "evalyall",   mode => "perl", description => "Perl (EvalY'All) (EVERYTHING)"},
     {name => "perl5.30.0", mode => "perl", description => "Perl 5.30.0"},
     {name => "perl5.30.0t", mode => "perl", description => "Perl 5.30.0 (threaded)"},
     {name => "perl5.28.2", mode => "perl", description => "Perl 5.28.2"},
@@ -146,7 +146,6 @@ my @langs = (
     {name => "perl3",     mode => "perl", description => "Perl 3.0.1.10_44"},
     {name => "perl2",     mode => "perl", description => "Perl 2"},
     {name => "perl1",     mode => "perl", description => "Perl 1"},
-
 );
 
 # Add a sorting rank to each language

@@ -35,7 +35,7 @@ sub _get_cache {
   return $memd->get($key);
 }
 
-my @major_langs = qw/perl perl5.30 perl5.28 perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/;
+my @major_langs = qw/perl perl5.30.0 perl5.28.2 perl5.26.3 perl5.24.4 perl5.22.4 perl5.20.3 perl5.18.4 perl5.16.3 perl5.14.4 perl5.12.5 perl5.10.1 perl5.8.9 perl5.6.2/;
 my @full_langs = map {"perl$_"} '', qw/5.30.0 5.28.2 5.28.1 5.28.0 5.26.3 5.26.2 5.26.1 5.26.0 5.24.4 5.24.3 5.24.2 5.24.1 5.24.0 5.22.4 5.22.3 5.22.2 5.22.1 5.22.0 5.20.3 5.20.2 5.20.1 5.20.0 5.18.4 5.18.3 5.18.2 5.18.1 5.18.0 5.16.3 5.16.2 5.16.1 5.16.0 5.14.4 5.14.3 5.14.2 5.14.1 5.14.0 5.12.5 5.12.4 5.12.3 5.12.2 5.12.1 5.12.0 5.10.1 5.10.0 5.8.9 5.8.8 5.8.7 5.8.6 5.8.5 5.8.4 5.8.3 5.8.2 5.8.1 5.8.0 5.6.2 5.6.1 5.6.0/;
 
 sub get_eval {
@@ -100,7 +100,10 @@ sub get_eval {
                 if ($wait || @$langs == 1) {
                   $callback->({status => "ready", output => \%output});
                 }
+              } else {
+                $memd->set($paste_id, {status => 'running', output => \%output}) if ($paste_id);
               }
+
             });
           }
         }
