@@ -29,23 +29,32 @@ sub _adopt_future {
   })
 }
 
-my @full_langs = qw/perl perl5.30 perl5.28 perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6 perl5.8.8 perl5.8.4 perl5.10.0/;
+sub _get_cache {
+  my ($key) = @_;
+  return unless defined $key;
+  return $memd->get($key);
+}
+
+my @major_langs = qw/perl perl5.30 perl5.28 perl5.26 perl5.24 perl5.22 perl5.20 perl5.18 perl5.16 perl5.14 perl5.12 perl5.10 perl5.8 perl5.6/;
+my @full_langs = map {"perl$_"} '', qw/5.30.0 5.28.2 5.28.1 5.28.0 5.26.3 5.26.2 5.26.1 5.26.0 5.24.4 5.24.3 5.24.2 5.24.1 5.24.0 5.22.4 5.22.3 5.22.2 5.22.1 5.22.0 5.20.3 5.20.2 5.20.1 5.20.0 5.18.4 5.18.3 5.18.2 5.18.1 5.18.0 5.16.3 5.16.2 5.16.1 5.16.0 5.14.4 5.14.3 5.14.2 5.14.1 5.14.0 5.12.5 5.12.4 5.12.3 5.12.2 5.12.1 5.12.0 5.10.1 5.10.0 5.8.9 5.8.8 5.8.7 5.8.6 5.8.5 5.8.4 5.8.3 5.8.2 5.8.1 5.8.0 5.6.2 5.6.1 5.6.0/;
 
 sub get_eval {
-    my ($self, $paste_id, $code, $langs, $callback) = @_;
+    my ($self, $paste_id, $code, $langs, $wait, $callback) = @_;
     print "Entering\n";
 
     if (@$langs == 1 && $langs->[0] eq "evalall") {
-      $langs = [@full_langs];
+      $langs = [@major_langs];
     } elsif (@$langs == 1 && $langs->[0] eq "evaltall") {
-      $langs = [map {$_."t"} @full_langs];
+      $langs = [map {$_."t"} @major_langs];
     } elsif (@$langs == 1 && $langs->[0] eq "evalrall") {
+      $langs = [map {$_, $_."t"} @major_langs];
+    } elsif (@$langs == 1 && $langs->[0] eq 'evalyall') {
       $langs = [map {$_, $_."t"} @full_langs];
     }
 
     use Data::Dumper;
     print "Languages! ", Dumper($langs);
-    if ($paste_id && (my $cached = $memd->get($paste_id))) {
+    if ($paste_id && (my $cached = _get_cache($paste_id))) {
       $callback->($cached);
     } else {
       # connect to server
@@ -57,9 +66,16 @@ sub get_eval {
         my $reader = $self->get_eval_reader($stream);
         my %output;
 
+        # TODO make running status messages per langs?
+        $memd->set($paste_id, {status => 'running', output => {}});
+
+        if (!$wait && @$langs != 1) {
+          $callback->({status => 'running', output => {}});
+        }
+
         for my $lang (@$langs) {
           if ($lang eq 'text') {
-            $callback->("");
+            $callback->({status => "ready", output => {}});
             return;
           } else {
             my $future = $self->async_eval($stream, $reader, $lang, $code);
@@ -77,11 +93,13 @@ sub get_eval {
 
               if (!keys %futures) { # I'm the last one
                 print "Calling memset\n";
-                $memd->set($paste_id, \%output) if ($paste_id);
+                $memd->set($paste_id, {status => 'ready', output => \%output}) if ($paste_id);
                 print "Returning output to delay\n";
                 use Data::Dumper;
                 print Dumper(\%output);
-                $callback->(\%output);
+                if ($wait || @$langs == 1) {
+                  $callback->({status => "ready", output => \%output});
+                }
               }
             });
           }
