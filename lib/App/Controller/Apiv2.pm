@@ -5,6 +5,7 @@ use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
 use Function::Parameters;
+use Mojo::Promise;
 
 sub routes {
   my ($class, $r) = @_;
@@ -48,12 +49,11 @@ sub api_get_paste {
     my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
-      $c->delay(sub {
-        my ($delay) = @_;
-          $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $delay->begin(0, 1))
-        },
-        sub {
-          my ($delay, $evalres) = @_;
+      my $promise = Mojo::Promise->new(sub {
+        my ($resolve, $reject) = @_;
+          $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $resolve)
+        })->then(sub {
+          my ($evalres) = @_;
 
           my ($status, $output_hr) = $evalres->@{qw/status output/};
 
@@ -69,6 +69,7 @@ sub api_get_paste {
 
           $c->render(json => $data);
         });
+        return $promise;
     } else {
 # 404
         return $c->reply->not_found;

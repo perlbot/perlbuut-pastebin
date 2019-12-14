@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
+use Mojo::Promise;
 
 sub routes {
   my ($class, $r) = @_;
@@ -25,14 +26,11 @@ sub run_eval {
     my $code = $data->param('code') // '';
     my $language = $data->param('language') // 'perl';
 
-    $self->delay(sub {
-      my $delay = shift;
-      $self->eval->get_eval(undef, $code, [$language], 1, $delay->begin(0,1));
-
-      return 1;
-    },
-    sub {
-      my $delay = shift;
+    my $promise = Mojo::Promise->new(sub {
+      my ($resolve, $reject) = @_;
+        $self->eval->get_eval(undef, $code, [$language], 1, $resolve);
+      });
+    $promise->then(sub {
       my ($evalres) = @_;
 
       use Data::Dumper;

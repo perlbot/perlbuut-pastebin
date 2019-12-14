@@ -6,6 +6,7 @@ use warnings;
 use App::Config;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::IOLoop;
+use Mojo::Promise;
 
 sub routes {
   my ($class, $r) = @_;
@@ -82,12 +83,12 @@ sub get_paste {
     my $row = $c->paste->get_paste($pasteid); 
 
     if ($row) {
-        $c->delay(sub {
-            my $delay = shift;
+        my $promise = Mojo::Promise->new(sub {
+            my $resolve = shift;
 
-            $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $delay->begin(0,1));
-        }, sub {
-            my ($delay, $evalres) = @_;
+            $c->eval->get_eval($pasteid, $row->{paste}, [$row->{language}], 0, $resolve);
+        })->then(sub {
+            my ($evalres) = @_;
 
             my ($status, $evalout) = $evalres->@{qw/status output/};
             $c->stash($row);
@@ -101,6 +102,8 @@ sub get_paste {
 
             $c->render('page');
         });
+
+        return $promise
     } else {
         return $c->reply->not_found;
     }
