@@ -78,6 +78,7 @@ sub get_asn_for_ip {
 
 sub is_banned_ip {
   my ($self, $_ip) = @_;
+  return 0 if ($_ip =~ /:/); # ignore ipv6 stuff for now
   my $ip = sprintf("%03d.%03d.%03d.%03d", split(/\./, $_ip));
 
   my $asn = $self->get_asn_for_ip($ip);

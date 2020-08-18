@@ -81,6 +81,8 @@ sub api_post_paste {
           $url =~ s|http:|https:|;
           unless ($code =~ $words || $who =~ $words || $desc =~ $words || $c->paste->is_banned_ip($c->remote_addr)) {
             $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $url);
+          } else {
+            printf "Not doing announcement, [%s] [%s] [%s] [%s]\n", ($code =~ $words), ($who =~ $words), ($desc =~ $words), ($c->paste->is_banned_ip($c->remote_addr));
           }
         }
 #    }

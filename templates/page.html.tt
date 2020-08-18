@@ -19,7 +19,27 @@
 </head>
 <body>
 
+<center>Note from author: I would like to add a small amount of data gathering/analytics to this to collect some browser information.  See the footer at the bottom of the page for details. <br></center>
+
 [% PROCESS body %]
 
+<div class="margins" style="margin: 5em 5em 5em 5em">
+Now that I have more space without disrupting the page here's a full explanation of what I want to do and am planning:
+<ul><li>I want to add some small analytics before doing an update, this will require javascript to collect the information</li>
+<li>The javascript will not be required to use the site, ever.</li>
+<li>I will be trying to collect only the following:
+<ol><li>More detailed browser information (versions, names, etc.).  I mostly get this through the webserver logs already but verfiying that it's accurate would be a plus</li>
+<li>Screen size.  This is really the big one.  All of my screens are either 1440p, 4K or an ultrawide monitor.  I know those aren't representative of those visiting the site so I want to have an idea of how small I should design for</li>
+</ol>
+<li>My plan is to self host a simple analytics system on the same server as perl.bot, no data will ever leave the my control.  Nothing will be sold or shared to anyone, and ideally no cookies will be needed for this. (I can't promise on this one yet, as I haven't setup or selected that platform yet.  The two I'm looking at right now are GoatCounter and Plausible, they are detailed here <a href="https://lwn.net/SubscriberLink/822568/04fe39890fe191af/">https://lwn.net/SubscriberLink/822568/04fe39890fe191af/</a>.</li>
+<li>I will continue to explicitly support TUI browsers like lynx, elinks and the emacs web browser</li>
+<li>This will not cause javascript to be needed for the site to function at all</li>
+</ul>
+
+<br>
+The reason for this is that I want to finally get around to adding multiple file support to the web UI, (It's been partially supported via undocumented extensions to the API and the evalserver itself) and make the UI changes necessary for that to work sanely.  I don't want those changes to cause anybody's experience to degrade and I'll also be using that time as a chance to clean up the HTML, JS, and CSS that does exist here to reduce page size a bit.  Depending on how things go I may drop some of the tiny things I've got (a small poly fill for the syntax highlighting) for Internet Explorer too.  Also please look forward to the next version of Mozilla Firefox as it finally, <b>*FINALLY*</b> fixes the long standing issue with Middle-Click paste on linux with the syntax highlighting editor.  That's been the most complained about problem on the pastebin.
+
+If you have any questions or concerns please get in touch with me on IRC (freenode or magnet, simcop2387) or email me simcop2387 @ simcop2387.info.  Also now on reddit, <a href="https://www.reddit.com/r/perl/comments/hc4qea/ethical_data_collection_on_a_pastebin/">https://www.reddit.com/r/perl/comments/hc4qea/ethical_data_collection_on_a_pastebin/</a>
+</div>
 </body>
 </html>

@@ -82,6 +82,9 @@ sub get_paste {
     
     my $row = $c->paste->get_paste($pasteid); 
 
+    use Data::Dumper;
+    print Dumper($row);
+
     if ($row) {
         my $promise = Mojo::Promise->new(sub {
             my $resolve = shift;
