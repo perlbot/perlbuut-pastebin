@@ -27,3 +27,8 @@ html, body, #content {
 .options label:not(:first-child) {
   padding-left: 2em;
 }
+
+pre {
+  color: #000;
+  background-color: #FFF;
+}

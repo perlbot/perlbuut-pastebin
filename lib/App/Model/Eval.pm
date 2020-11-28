@@ -59,9 +59,13 @@ sub get_eval {
     } else {
       # connect to server
       my %futures;
+      
+      $memd->set($paste_id, {status => 'running', output => {}});
 
       my $server = $self->eval_connect(sub {
         my ($loop, $err, $stream) = @_;
+
+        print "Error? $err?\n";
 
         my $reader = $self->get_eval_reader($stream);
         my %output;
