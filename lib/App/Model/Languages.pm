@@ -22,6 +22,8 @@ my @langs = (
     {name => "evaltall",   mode => "perl", description => "Perl (EvalAll) (major threaded)"},
     {name => "evalrall",   mode => "perl", description => "Perl (EvalAll) (major un+threaded)"},
     {name => "evalyall",   mode => "perl", description => "Perl (EvalY'All) (EVERYTHING)"},
+    {name => "perl5.32.1", mode => "perl", description => "Perl 5.32.1"},
+    {name => "perl5.32.1t", mode => "perl", description => "Perl 5.32.1 (threaded)"},
     {name => "perl5.32.0", mode => "perl", description => "Perl 5.32.0"},
     {name => "perl5.32.0t", mode => "perl", description => "Perl 5.32.0 (threaded)"},
     {name => "perl5.30.3", mode => "perl", description => "Perl 5.30.3"},
