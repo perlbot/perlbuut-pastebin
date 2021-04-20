@@ -4,28 +4,50 @@ use strict;
 use warnings;
 
 use DBI;
+use App::Config;
 use Mojo::Base '-base';
 use DateTime;
+use Mojo::Pg;
+use Regexp::Assemble;
 
 # TODO config for dbname
 # has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
-has 'dbh' => sub {DBI->connect("dbi:Pg:dbname=perlbot_pastes", "perlbot_pastebin", "wrorkEvopCagyadMoighinIgiloinnAl:drepHodNorchoibTessiraypGacWobjoolbyewd9OsofogerObhypBeurvackidnipBifreTwusGikghiavratuckTujtie", {RaiseError => 1, sqlite_unicode => 1})};
+my $cfg = App::Config::get_config('database');
+
+has 'pg' => sub {
+  Mojo::Pg->new($cfg->{dsc});
+};
+
 has 'asndbh' => sub {DBI->connect("dbi:SQLite:dbname=asn.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
 
 sub insert_pastebin {
   my $self = shift;
-  my $dbh = $self->dbh;
   my ($paste, $who, $what, $where, $expire, $lang, $ip) = @_;
  
   $expire = undef if !$expire; # make sure it's null if it's empty
 
-  $dbh->do(q{INSERT INTO posts (paste, who, "where", what, "when", "expiration", "language", "ip") VALUES (?, ?, ?, ?, ?, ?, ?, ?)}, {}, $paste, $who, $where, $what, time(), $expire, $lang, $ip);
-  my $id = $dbh->last_insert_id('', '', 'posts', 'id');
+  my $id = $self->pg->db->insert('posts', 
+    {
+      paste => $paste, 
+      who => $who, 
+      where => $where, 
+      when => time(), 
+      expiration => $expire, 
+      language => $lang, 
+      ip => $ip
+    }, {returning => 'id'})->hash->{id};
 
   # TODO this needs to retry when it fails.
   my @chars = ('a'..'z', 1..9);
   my $slug = join '', map {$chars[rand() *@chars]} 1..6;
-  $dbh->do("INSERT INTO slugs (post_id, slug) VAlUES (?, ?)", {}, $id, $slug);
+
+  $self->pg->db->insert(
+    'slugs',
+    {
+      post_id => $id,
+      slug => $slug
+    }
+  );
 
   return $slug;
 }
@@ -33,15 +55,14 @@ sub insert_pastebin {
 sub get_paste {
   my ($self, $pasteid) = @_;
 
-  my $dbh = $self->dbh;
-  my $row = $dbh->selectrow_hashref(q{
+  my $row = $self->pg->db->query(q{
     SELECT p.* 
       FROM posts p 
       LEFT JOIN slugs s ON p.id = s.post_id 
       WHERE s.slug = ?
       ORDER BY s.slug DESC 
       LIMIT 1
-    }, {}, $pasteid);
+      }, $pasteid)->hash;
 
   my $when = delete $row->{when};
 
@@ -62,10 +83,16 @@ sub get_paste {
 sub banned_word_list_re {
   my $self = shift;
 
-  my $data = $self->dbh->selectall_arrayref("SELECT word FROM banned_words WHERE deleted <> 1");
+  my $data = $self->pg->db->select(
+      'banned_words', 
+      ['word'], 
+      {-not_bool => 'deleted'})
+    ->hashes
+    ->map(sub { quotemeta $_->{word} });
 
-  my $re_str = join '|', map {quotemeta $_->[0]} @$data;
-  my $re = qr/($re_str)/i;
+  my $ra = Regexp::Assemble->new();
+  $ra->add(@$data);
+  my $re = $ra->re;
 
   return $re;
 }
@@ -73,17 +100,32 @@ sub banned_word_list_re {
 sub get_asn_for_ip {
   my ($self, $ip) = @_;
 
-  my ($asn) = @{$self->asndbh->selectrow_arrayref("SELECT asn FROM asn WHERE ? >= start AND ? <= end", {}, $ip, $ip) || []}[0];
-  return $asn;
+  my $data = $self->pg->db->select(
+      'asn', 
+      ['asn'], 
+      {start => {'<=' => $ip},
+       end => {'>=' => $ip}})
+    ->hashes
+    ->map(sub { $_->{asn} });
+
+  return $data->[0];
 }
 
 sub is_banned_ip {
   my ($self, $_ip) = @_;
   return 0 if ($_ip =~ /:/); # ignore ipv6 stuff for now
   my $ip = sprintf("%03d.%03d.%03d.%03d", split(/\./, $_ip));
-
+  
   my $asn = $self->get_asn_for_ip($ip);
-  my $row_ar = $self->dbh->selectall_arrayref("SELECT * FROM banned_ips i LEFT JOIN banned_asns a WHERE (i.ip = ? AND i.deleted <> 1) OR (a.asn = ? AND a.deleted <> 1)", {}, $ip, $asn);
+  
+  my $row_ar = $self->pg->db->query(
+    q{
+    SELECT 1
+    FROM banned_ips i 
+    LEFT JOIN banned_asns a ON 1=1 
+    WHERE (i.ip = ? AND NOT i.deleted) OR (a.asn = ? AND NOT a.deleted)
+    }, 
+    $ip, $asn)->hashes;
 
   return 0+@$row_ar;
 }
