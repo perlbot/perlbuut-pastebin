@@ -8,7 +8,8 @@ use Mojo::Base '-base';
 use DateTime;
 
 # TODO config for dbname
-has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
+# has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
+has 'dbh' => sub {DBI->connect("dbi:Pg:dbname=perlbot_pastes", "perlbot_pastebin", "wrorkEvopCagyadMoighinIgiloinnAl:drepHodNorchoibTessiraypGacWobjoolbyewd9OsofogerObhypBeurvackidnipBifreTwusGikghiavratuckTujtie", {RaiseError => 1, sqlite_unicode => 1})};
 has 'asndbh' => sub {DBI->connect("dbi:SQLite:dbname=asn.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
 
 sub insert_pastebin {
@@ -18,7 +19,7 @@ sub insert_pastebin {
  
   $expire = undef if !$expire; # make sure it's null if it's empty
 
-  $dbh->do("INSERT INTO posts (paste, who, 'where', what, 'when', 'expiration', 'language', 'ip') VALUES (?, ?, ?, ?, ?, ?, ?, ?)", {}, $paste, $who, $where, $what, time(), $expire, $lang, $ip);
+  $dbh->do(q{INSERT INTO posts (paste, who, "where", what, "when", "expiration", "language", "ip") VALUES (?, ?, ?, ?, ?, ?, ?, ?)}, {}, $paste, $who, $where, $what, time(), $expire, $lang, $ip);
   my $id = $dbh->last_insert_id('', '', 'posts', 'id');
 
   # TODO this needs to retry when it fails.
@@ -37,10 +38,10 @@ sub get_paste {
     SELECT p.* 
       FROM posts p 
       LEFT JOIN slugs s ON p.id = s.post_id 
-      WHERE p.id = ? OR s.slug = ?
+      WHERE s.slug = ?
       ORDER BY s.slug DESC 
       LIMIT 1
-    }, {}, $pasteid, $pasteid);
+    }, {}, $pasteid);
 
   my $when = delete $row->{when};
 
