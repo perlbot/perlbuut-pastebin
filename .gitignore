@@ -1,6 +1,9 @@
 *.swp
 *~
 .well-known/
-pastes.db
+pastes.db*
 blog/*
 asn.db
+hypnotoad.pid
+*.sql
+*.script
