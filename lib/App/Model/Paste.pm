@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use DBI;
-use App::Config;
 use Mojo::Base '-base';
 use DateTime;
 use Mojo::Pg;
@@ -12,7 +11,6 @@ use Regexp::Assemble;
 
 # TODO config for dbname
 # has 'dbh' => sub {DBI->connect("dbi:SQLite:dbname=pastes.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
-my $cfg = App::Config::get_config('database');
 
 has 'pg' => sub {
   Mojo::Pg->new($cfg->{dsc});

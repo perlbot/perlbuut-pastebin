@@ -3,7 +3,6 @@ package App::Controller::Paste;
 use strict;
 use warnings;
 
-use App::Config;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::IOLoop;
 use Mojo::Promise;
@@ -40,7 +39,7 @@ sub to_root {
 sub root {
     my $c    = shift;
     $c->stash({languages => $c->languages->get_languages});
-    $c->stash({pastedata => q{}, channels => $cfg->{announce}{channels}, page_tmpl => 'editor.html'});
+    $c->stash({pastedata => q{}, channels => $c->app->config('announce')->{channels}, page_tmpl => 'editor.html'});
     $c->render("page");
 };
 
@@ -53,7 +52,7 @@ sub edit_paste {
 
     if ($row->{when}) {
         $c->stash({languages => $c->languages->get_languages});
-        $c->stash({pastedata => $row->{paste}, channels =>$cfg->{announce}{channels}});
+        $c->stash({pastedata => $row->{paste}, channels =>$c->app->config('announce')->{channels}});
         $c->stash({page_tmpl => 'editor.html'});
 
         $c->render(template => 'page');
