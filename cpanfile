@@ -13,3 +13,4 @@ requires 'Mojolicious::Plugin::RemoteAddr';
 requires 'App::EvalServerAdvanced::Protocol';
 requires 'Future::Mojo';
 requires 'Regexp::Assemble';
+requires 'Syntax::Keyword::Try';
