@@ -7,6 +7,7 @@ use v5.22;
 use Mojo::Base 'Mojolicious';
 
 use Mojolicious::Plugin::TtRenderer;
+use App::Config;
 use App::Controller::Paste;
 use App::Controller::Eval;
 use App::Controller::Apiv1;
@@ -19,12 +20,9 @@ use App::Model::Languages;
 sub startup {
   my $self = shift;
 
-  # TODO get this to load the proper stuff from the config into the app
-  my $cfg_plg = $self->plugin('TomlConfig');
-  #  $self->config($cfg->{mojolicious});
+  $self->config($cfg->{mojolicious});
 
   $self->plugin('RemoteAddr');
-
 
   $self->plugin('tt_renderer' => {
     template_options => {
