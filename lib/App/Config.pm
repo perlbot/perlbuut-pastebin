@@ -19,6 +19,8 @@ my $cfg_dir = path($Bin)->child('etc');
 
 our $env = $ENV{MOJO_MODE} // $ENV{PLACK_ENV} // "development";
 
+warn "Loading $env configs";
+
 our $cfg = do {
   my $merged_config;
 
