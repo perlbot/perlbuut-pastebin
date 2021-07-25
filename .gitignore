@@ -7,3 +7,5 @@ asn.db
 hypnotoad.pid
 *.sql
 *.script
+.pls_cache/
+.vstags

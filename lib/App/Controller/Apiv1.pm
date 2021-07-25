@@ -66,7 +66,7 @@ sub api_post_paste {
 
     my @args = map {($c->param($_))} qw/paste username description channel expire language/;
 
-    my $id = $c->paste->insert_pastebin(@args, $c->remote_addr);
+    my ($slug, $id) = $c->paste->insert_pastebin(@args, $c->remote_addr);
     my ($code, $who, $desc, $channel) = @args;
 
     # TODO select which one based on config
@@ -77,7 +77,7 @@ sub api_post_paste {
 #    } else {
         if ($channel) { # TODO config for allowing announcements
           my $words = $c->paste->banned_word_list_re;
-          my $url = $c->req->url->base()."/p/$id";
+          my $url = $c->req->url->base()."/p/$slug";
           $url =~ s|http:|https:|;
           unless ($code =~ $words || $who =~ $words || $desc =~ $words || $c->paste->is_banned_ip($c->remote_addr)) {
             $c->perlbot->announce($channel, $who, substr($desc, 0, 40), $url);
@@ -88,12 +88,12 @@ sub api_post_paste {
 #    }
 
     $c->render(json => {
-      url => $c->req->url->base()."/p/$id", # TODO base url in config
-      id => $id,
+      url => $c->req->url->base()."/p/$slug", # TODO base url in config
+      id => $slug,
     });
 
     if ($c->param('redirect')) {
-      $c->redirect_to("/p/$id");
+      $c->redirect_to("/p/$slug");
     }
 };
 

@@ -20,6 +20,20 @@ has 'pg' => sub {
 
 has 'asndbh' => sub {DBI->connect("dbi:SQLite:dbname=asn.db", "", "", {RaiseError => 1, sqlite_unicode => 1})};
 
+sub get_word_list {
+  my $self = shift;
+  my ($id) = @_;
+
+  my $word_counts = $self->pg->db->query("
+  WITH vector_decomp AS (
+    SELECT unnest(full_document_tsvector) AS vectors FROM posts WHERE id = ?
+	)
+  SELECT (vectors).lexeme as word, array_length((vectors).weights, 1) as word_count FROM vector_decomp
+  ", $id)->hashes;
+
+  return $word_counts->each;
+}
+
 sub insert_pastebin {
   my $self = shift;
   my ($paste, $who, $what, $where, $expire, $lang, $ip) = @_;
@@ -37,6 +51,7 @@ sub insert_pastebin {
       ip => $ip
     }, {returning => 'id'})->hash->{id};
 
+
   # TODO this needs to retry when it fails.
   my @chars = ('a'..'z', 1..9);
   my $slug = join '', map {$chars[rand() *@chars]} 1..6;
@@ -49,7 +64,7 @@ sub insert_pastebin {
     }
   );
 
-  return $slug;
+  return ($slug, $id);
 }
 
 sub get_paste {
